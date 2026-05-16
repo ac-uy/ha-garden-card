@@ -246,7 +246,7 @@ export class WaterAnimation extends LitElement {
           cx="2"
           cy="2"
           r="0.8"
-          fill="${zone.color}"
+          fill="#ffffff"
           opacity="0.7"
         />
         <circle
@@ -254,7 +254,7 @@ export class WaterAnimation extends LitElement {
           cx="6"
           cy="5"
           r="0.6"
-          fill="${zone.color}"
+          fill="#ffffff"
           opacity="0.5"
         />
         <!-- Secondary particles for density -->
@@ -263,7 +263,7 @@ export class WaterAnimation extends LitElement {
           cx="4"
           cy="7"
           r="0.5"
-          fill="${zone.color}"
+          fill="#ffffff"
           opacity="0.4"
         />
         <circle
@@ -271,7 +271,7 @@ export class WaterAnimation extends LitElement {
           cx="7"
           cy="1"
           r="0.4"
-          fill="${zone.color}"
+          fill="#ffffff"
           opacity="0.6"
         />
       </pattern>
@@ -330,16 +330,16 @@ export function getWaterPatternSvg(
       patternUnits="userSpaceOnUse"
       patternTransform="rotate(15)"
     >
-      <circle cx="2" cy="2" r="0.8" fill="${color}" opacity="0.7">
+      <circle cx="2" cy="2" r="0.8" fill="#ffffff" opacity="0.7">
         <animate attributeName="opacity" values="0.7;0.9;0.7" dur="3s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="6" cy="5" r="0.6" fill="${color}" opacity="0.5">
+      <circle cx="6" cy="5" r="0.6" fill="#ffffff" opacity="0.5">
         <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2.5s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="4" cy="7" r="0.5" fill="${color}" opacity="0.4">
+      <circle cx="4" cy="7" r="0.5" fill="#ffffff" opacity="0.4">
         <animate attributeName="opacity" values="0.4;0.7;0.4" dur="3s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="7" cy="1" r="0.4" fill="${color}" opacity="0.6">
+      <circle cx="7" cy="1" r="0.4" fill="#ffffff" opacity="0.6">
         <animate attributeName="opacity" values="0.6;0.85;0.6" dur="2.5s" repeatCount="indefinite"/>
       </circle>
     </pattern>
