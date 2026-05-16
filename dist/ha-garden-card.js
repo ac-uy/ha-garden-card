@@ -887,11 +887,10 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
           />
 
           <!-- Other zones overlay (reference) -->
-          ${this.existingZones.filter(e=>e.polygon&&e.polygon.length>=3).map(e=>V`
-            <div class="existing-zone-fill" style="clip-path: polygon(${e.polygon.map(([e,t])=>`${e}% ${t}%`).join(", ")}); background-color: ${e.color||"#888"};">
-              <span class="existing-zone-label">${e.name}</span>
-            </div>
-          `)}
+          ${this.existingZones.filter(e=>e.polygon&&e.polygon.length>=3).map(e=>{const t=e.polygon.reduce((e,[t])=>e+t,0)/e.polygon.length,o=e.polygon.reduce((e,[,t])=>e+t,0)/e.polygon.length;return V`
+              <div class="existing-zone-fill" style="clip-path: polygon(${e.polygon.map(([e,t])=>`${e}% ${t}%`).join(", ")}); background-color: ${e.color||"#888"};"></div>
+              <span class="existing-zone-label" style="left: ${t}%; top: ${o}%;">${e.name}</span>
+            `})}
 
           <!-- Current zone fill overlay -->
           ${this.polygon.length>=3?V`
@@ -1065,17 +1064,18 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
       opacity: 0.9;
       pointer-events: none;
       z-index: 4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .existing-zone-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
       color: #ffffff;
-      font-size: 11px;
-      font-weight: 600;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      font-size: 12px;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.7);
       pointer-events: none;
+      z-index: 5;
+      white-space: nowrap;
     }
 
     .line-svg {

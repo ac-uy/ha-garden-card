@@ -103,11 +103,14 @@ export class ZoneEditor extends LitElement {
           />
 
           <!-- Other zones overlay (reference) -->
-          ${this.existingZones.filter(z => z.polygon && z.polygon.length >= 3).map(zone => html`
-            <div class="existing-zone-fill" style="clip-path: polygon(${zone.polygon!.map(([x, y]) => `${x}% ${y}%`).join(', ')}); background-color: ${zone.color || '#888'};">
-              <span class="existing-zone-label">${zone.name}</span>
-            </div>
-          `)}
+          ${this.existingZones.filter(z => z.polygon && z.polygon.length >= 3).map(zone => {
+            const cx = zone.polygon!.reduce((s, [x]) => s + x, 0) / zone.polygon!.length;
+            const cy = zone.polygon!.reduce((s, [, y]) => s + y, 0) / zone.polygon!.length;
+            return html`
+              <div class="existing-zone-fill" style="clip-path: polygon(${zone.polygon!.map(([x, y]) => `${x}% ${y}%`).join(', ')}); background-color: ${zone.color || '#888'};"></div>
+              <span class="existing-zone-label" style="left: ${cx}%; top: ${cy}%;">${zone.name}</span>
+            `;
+          })}
 
           <!-- Current zone fill overlay -->
           ${this.polygon.length >= 3 ? html`
@@ -613,17 +616,18 @@ export class ZoneEditor extends LitElement {
       opacity: 0.9;
       pointer-events: none;
       z-index: 4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .existing-zone-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
       color: #ffffff;
-      font-size: 11px;
-      font-weight: 600;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      font-size: 12px;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.7);
       pointer-events: none;
+      z-index: 5;
+      white-space: nowrap;
     }
 
     .line-svg {
