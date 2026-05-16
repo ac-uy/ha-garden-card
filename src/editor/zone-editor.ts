@@ -321,12 +321,15 @@ export class ZoneEditor extends LitElement {
       return;
     }
 
+    // Don't add vertex if a drag just ended (within 100ms)
+    if (this._draggingIndex !== null) return;
+
     // Don't add vertices if polygon is closed
     if (this._isClosed) return;
 
-    // Don't add vertex if clicking on a vertex dot
+    // Don't add vertex if clicking on a vertex dot or line
     const target = e.target as HTMLElement;
-    if (target.closest(".vertex-dot")) return;
+    if (target.closest(".vertex-dot") || target.closest(".line-svg")) return;
 
     const container = this.renderRoot.querySelector(".canvas-container") as HTMLElement;
     if (!container) return;
@@ -362,13 +365,9 @@ export class ZoneEditor extends LitElement {
     e.preventDefault();
     e.stopPropagation();
 
-    // Start drag tracking (no long-press timer — use right-click to delete)
+    // Start drag tracking
     this._draggingIndex = index;
     this._didDrag = false;
-
-    // Capture pointer for drag
-    const target = e.target as HTMLElement;
-    target.setPointerCapture(e.pointerId);
   }
 
   /**
@@ -398,12 +397,6 @@ export class ZoneEditor extends LitElement {
    */
   private _handlePointerUp(e: PointerEvent): void {
     if (this._draggingIndex !== null) {
-      // Release pointer capture
-      const target = e.target as HTMLElement;
-      if (target.hasPointerCapture?.(e.pointerId)) {
-        target.releasePointerCapture(e.pointerId);
-      }
-
       this._draggingIndex = null;
 
       if (this._didDrag) {
