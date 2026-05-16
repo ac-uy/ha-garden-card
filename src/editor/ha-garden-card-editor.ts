@@ -469,6 +469,7 @@ export class HaGardenCardEditor extends LitElement {
                     .image=${this._config.image || ""}
                     .existingZones=${(this._config.zones || []).filter((_, i) => i !== index)}
                     .polygon=${zone.polygon || []}
+                    .color=${zone.color || "#4CAF50"}
                     @polygon-changed=${(e: CustomEvent) => this._handlePolygonChanged(index, e)}
                     @polygon-complete=${(e: CustomEvent) => this._handlePolygonComplete(index, e)}
                   ></zone-editor>

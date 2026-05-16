@@ -16,6 +16,8 @@
 import { LitElement, html, css, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import type { ZoneConfig, HomeAssistant } from "../models/types";
+import { calculateProgress } from "../utils/progress";
+import { formatRemainingTime } from "../utils/time-format";
 
 // =============================================================================
 // Service Call Routing
@@ -100,6 +102,7 @@ export class ZoneControl extends LitElement {
       border: 1px solid var(--divider-color, #e0e0e0);
       transition: box-shadow 200ms ease, opacity 200ms ease,
         border-color 200ms ease;
+      flex-wrap: wrap;
     }
 
     .zone-control--active {
@@ -207,6 +210,39 @@ export class ZoneControl extends LitElement {
       background: var(--error-color, #d32f2f);
       filter: brightness(1.1);
     }
+
+    .progress-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--divider-color, #e0e0e0);
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--divider-color, #e0e0e0);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s linear;
+    }
+
+    .remaining-time {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary-text-color, #212121);
+      white-space: nowrap;
+      min-width: 36px;
+      text-align: right;
+    }
   `;
 
   /**
@@ -287,6 +323,49 @@ export class ZoneControl extends LitElement {
                 </button>
               `}
         </div>
+
+        ${isActive && this.zone.countdown_entity ? this._renderProgressBar() : nothing}
+      </div>
+    `;
+  }
+
+  /**
+   * Renders the progress bar with remaining time for active zones.
+   */
+  private _renderProgressBar() {
+    if (!this.hass || !this.zone || !this.zone.countdown_entity) return nothing;
+
+    const countdownEntity = this.hass.states[this.zone.countdown_entity];
+    if (!countdownEntity || countdownEntity.state === "unavailable") return nothing;
+
+    const remaining = parseFloat(countdownEntity.state);
+    if (isNaN(remaining)) return nothing;
+
+    // Get total duration from the duration entity or use remaining as fallback
+    let total = remaining;
+    if (this.zone.duration_entity) {
+      const durationEntity = this.hass.states[this.zone.duration_entity];
+      if (durationEntity) {
+        const durationValue = parseFloat(durationEntity.state);
+        if (!isNaN(durationValue) && durationValue > 0) {
+          // Duration entity is in minutes, countdown is in seconds
+          total = durationValue * 60;
+        }
+      }
+    }
+
+    if (total <= 0) return nothing;
+
+    const progress = calculateProgress(remaining, total);
+    const timeText = formatRemainingTime(remaining);
+    const zoneColor = this.zone.color || "#4CAF50";
+
+    return html`
+      <div class="progress-section">
+        <div class="progress-track">
+          <div class="progress-fill" style="width: ${progress}%; background-color: ${zoneColor}"></div>
+        </div>
+        <span class="remaining-time">${timeText}</span>
       </div>
     `;
   }
@@ -296,7 +375,7 @@ export class ZoneControl extends LitElement {
    * Routes to the correct service based on entity domain.
    */
   private async _handleStart(): Promise<void> {
-    if (!this.hass || !this.zone || this._isUnavailable) return;
+    if (!this.hass || !this.zone || !this.zone.entity || this._isUnavailable) return;
 
     const { domain, service } = getStartService(this.zone.entity);
     await this.hass.callService(domain, service, {
@@ -309,7 +388,7 @@ export class ZoneControl extends LitElement {
    * Routes to the correct service based on entity domain.
    */
   private async _handleStop(): Promise<void> {
-    if (!this.hass || !this.zone || this._isUnavailable) return;
+    if (!this.hass || !this.zone || !this.zone.entity || this._isUnavailable) return;
 
     const { domain, service } = getStopService(this.zone.entity);
     await this.hass.callService(domain, service, {

@@ -42,6 +42,10 @@ export class ZoneEditor extends LitElement {
   @property({ attribute: false })
   polygon: [number, number][] = [];
 
+  /** Color for the zone being drawn (hex). */
+  @property({ type: String })
+  color: string = "#03a9f4";
+
   // =========================================================================
   // Internal State
   // =========================================================================
@@ -207,9 +211,10 @@ export class ZoneEditor extends LitElement {
       return html`
         <polygon
           points="${points}"
-          fill="rgba(3, 169, 244, 0.35)"
+          fill="${this.color}"
+          opacity="0.35"
           stroke="#ffffff"
-          stroke-width="0.8"
+          stroke-width="1.2"
           stroke-linejoin="round"
         />
       `;
@@ -222,7 +227,8 @@ export class ZoneEditor extends LitElement {
       <!-- Semi-transparent fill preview -->
       <polygon
         points="${previewPoints}"
-        fill="rgba(3, 169, 244, 0.2)"
+        fill="${this.color}"
+        opacity="0.2"
         stroke="none"
       />
       <!-- Visible stroke for the drawn lines -->
@@ -230,7 +236,7 @@ export class ZoneEditor extends LitElement {
         points="${points}"
         fill="none"
         stroke="#ffffff"
-        stroke-width="0.8"
+        stroke-width="1.2"
         stroke-linecap="round"
         stroke-linejoin="round"
         stroke-dasharray="2,1"
@@ -248,8 +254,8 @@ export class ZoneEditor extends LitElement {
           cx="${x}"
           cy="${y}"
           r="${index === 0 && !this._isClosed && this.polygon.length > 2
-            ? "3"
-            : "2"}"
+            ? "4.5"
+            : "3.5"}"
           class="vertex ${index === 0 && !this._isClosed && this.polygon.length > 2
             ? "vertex--first"
             : ""} ${this._draggingIndex === index ? "vertex--dragging" : ""}"
@@ -259,7 +265,7 @@ export class ZoneEditor extends LitElement {
           stroke="${index === 0 && !this._isClosed && this.polygon.length > 2
             ? "#ffffff"
             : "#03a9f4"}"
-          stroke-width="0.5"
+          stroke-width="0.8"
           data-index="${index}"
           @pointerdown=${(e: PointerEvent) => this._handleVertexPointerDown(e, index)}
           @contextmenu=${(e: Event) => this._handleVertexContextMenu(e, index)}
