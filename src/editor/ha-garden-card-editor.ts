@@ -50,11 +50,6 @@ export class HaGardenCardEditor extends LitElement {
   @state() private _editingMowerZone = false;
   @state() private _editingPoolZone = false;
 
-  // Use light DOM so ha-entity-picker can access HA's custom element registry
-  createRenderRoot() {
-    return this;
-  }
-
   /**
    * Called by HA to provide the current configuration.
    */
@@ -349,14 +344,125 @@ export class HaGardenCardEditor extends LitElement {
       return nothing;
     }
 
+    const schema = [
+      { name: "title", selector: { text: {} }, label: "Card Title" },
+      { name: "image", selector: { text: {} }, label: "Image URL (e.g. /local/garden.png)" },
+      { name: "layout", selector: { select: { options: ["", "compact", "medium", "wide"], mode: "dropdown" } }, label: "Layout (optional)" },
+      { name: "zones_columns", selector: { number: { min: 1, max: 6, mode: "box" } }, label: "Zone Columns" },
+    ];
+
+    const mowerSchema = [
+      { name: "entity", selector: { entity: { domain: "lawn_mower" } }, label: "Mower Entity" },
+      { name: "battery_entity", selector: { entity: { domain: "sensor" } }, label: "Battery Sensor (optional)" },
+    ];
+
+    const poolSchema = [
+      { name: "entity", selector: { entity: { domain: ["switch", "vacuum", "input_boolean"] } }, label: "Pool Cleaner Entity" },
+    ];
+
     return html`
       <div class="editor">
-        ${this._renderGeneralSection()}
+        <ha-form
+          .hass=${this._hass}
+          .data=${this._config}
+          .schema=${schema}
+          .computeLabel=${(s: any) => s.label || s.name}
+          @value-changed=${this._handleFormChanged}
+        ></ha-form>
+
+        <h3 class="section-title">🤖 Robot Mower (optional)</h3>
+        <ha-form
+          .hass=${this._hass}
+          .data=${this._config.mower || {}}
+          .schema=${mowerSchema}
+          .computeLabel=${(s: any) => s.label || s.name}
+          @value-changed=${this._handleMowerFormChanged}
+        ></ha-form>
+        ${this._config.mower?.entity ? html`
+          <div class="field">
+            <div class="polygon-status">
+              ${this._config.mower?.zone && this._config.mower.zone.length >= 3
+                ? html`<span class="polygon-info">✓ ${this._config.mower.zone.length} points</span>`
+                : html`<span class="polygon-info polygon-info--empty">No mower zone</span>`}
+              <button class="btn-draw" @click=${this._handleEditMowerZone}>
+                ${this._editingMowerZone ? "Close" : "Draw Mower Zone"}
+              </button>
+            </div>
+            ${this._editingMowerZone ? html`
+              <zone-editor
+                .image=${this._config.image || ""}
+                .existingZones=${this._config.zones || []}
+                .polygon=${this._config.mower?.zone || []}
+                @polygon-changed=${this._handleMowerZoneChanged}
+                @polygon-complete=${this._handleMowerZoneComplete}
+              ></zone-editor>
+            ` : nothing}
+          </div>
+        ` : nothing}
+
+        <h3 class="section-title">🏊 Pool Cleaner (optional)</h3>
+        <ha-form
+          .hass=${this._hass}
+          .data=${this._config.pool || {}}
+          .schema=${poolSchema}
+          .computeLabel=${(s: any) => s.label || s.name}
+          @value-changed=${this._handlePoolFormChanged}
+        ></ha-form>
+        ${this._config.pool?.entity ? html`
+          <div class="field">
+            <div class="polygon-status">
+              ${this._config.pool?.zone && this._config.pool.zone.length >= 3
+                ? html`<span class="polygon-info">✓ ${this._config.pool.zone.length} points</span>`
+                : html`<span class="polygon-info polygon-info--empty">No pool zone</span>`}
+              <button class="btn-draw" @click=${this._handleEditPoolZone}>
+                ${this._editingPoolZone ? "Close" : "Draw Pool Zone"}
+              </button>
+            </div>
+            ${this._editingPoolZone ? html`
+              <zone-editor
+                .image=${this._config.image || ""}
+                .existingZones=${this._config.zones || []}
+                .polygon=${this._config.pool?.zone || []}
+                @polygon-changed=${this._handlePoolZoneChanged}
+                @polygon-complete=${this._handlePoolZoneComplete}
+              ></zone-editor>
+            ` : nothing}
+          </div>
+        ` : nothing}
+
         ${this._renderZonesSection()}
-        ${this._renderMowerSection()}
-        ${this._renderPoolSection()}
       </div>
     `;
+  }
+
+  private _handleFormChanged(e: CustomEvent): void {
+    e.stopPropagation();
+    const newConfig = { ...this._config, ...e.detail.value };
+    this._dispatchConfigChanged(newConfig);
+  }
+
+  private _handleMowerFormChanged(e: CustomEvent): void {
+    e.stopPropagation();
+    const mowerData = e.detail.value;
+    if (!mowerData.entity) {
+      const { mower: _, ...rest } = this._config;
+      this._dispatchConfigChanged(rest as GardenCardConfig);
+    } else {
+      const mower = { ...(this._config.mower || { entity: "" }), ...mowerData };
+      this._dispatchConfigChanged({ ...this._config, mower });
+    }
+  }
+
+  private _handlePoolFormChanged(e: CustomEvent): void {
+    e.stopPropagation();
+    const poolData = e.detail.value;
+    if (!poolData.entity) {
+      const { pool: _, ...rest } = this._config;
+      this._dispatchConfigChanged(rest as GardenCardConfig);
+    } else {
+      const pool = { ...(this._config.pool || { entity: "" }), ...poolData };
+      this._dispatchConfigChanged({ ...this._config, pool });
+    }
   }
 
   private _renderGeneralSection() {
