@@ -283,7 +283,7 @@ export class ZoneEditor extends LitElement {
     if (this.polygon.length < 2) return nothing;
 
     const lines = [];
-    const pts = this._isClosed ? [...this.polygon, this.polygon[0]] : this.polygon;
+    const pts = this.polygon.length >= 3 ? [...this.polygon, this.polygon[0]] : this.polygon;
 
     for (let i = 0; i < pts.length - 1; i++) {
       const [x1, y1] = pts[i];

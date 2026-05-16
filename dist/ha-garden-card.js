@@ -986,7 +986,7 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
           >
             ${W}
           </div>
-        `})}_renderLines(){if(this.polygon.length<2)return W;const e=[],t=this._isClosed?[...this.polygon,this.polygon[0]]:this.polygon;for(let o=0;o<t.length-1;o++){const[i,n]=t[o],[s,r]=t[o+1];e.push(V`
+        `})}_renderLines(){if(this.polygon.length<2)return W;const e=[],t=this.polygon.length>=3?[...this.polygon,this.polygon[0]]:this.polygon;for(let o=0;o<t.length-1;o++){const[i,n]=t[o],[s,r]=t[o+1];e.push(V`
         <svg class="line-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;">
           <line
             x1="${i}%" y1="${n}%"
