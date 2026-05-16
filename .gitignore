@@ -1,0 +1,5 @@
+node_modules/
+types/
+*.tsbuildinfo
+.DS_Store
+test-output.txt
