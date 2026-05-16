@@ -1062,7 +1062,7 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
       left: 0;
       width: 100%;
       height: 100%;
-      opacity: 0.3;
+      opacity: 0.15;
       pointer-events: none;
       z-index: 4;
       display: flex;
