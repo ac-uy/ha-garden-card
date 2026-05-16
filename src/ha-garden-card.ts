@@ -303,6 +303,7 @@ export class HaGardenCard extends LitElement {
             <zone-control-panel
               .zones=${this._config.zones || []}
               .hass=${this._hass}
+              .columns=${this._config.zones_columns || (this._layoutMode === 'compact' ? 1 : 2)}
             ></zone-control-panel>
 
             <schedule-view

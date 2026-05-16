@@ -18,6 +18,7 @@ export interface GardenCardConfig {
   title?: string;
   image?: string; // URL to garden/backyard image
   layout?: string; // Force layout: "compact", "medium", or "wide"
+  zones_columns?: number; // Number of zone control columns (default: 1 for compact, 2 for medium/wide)
   zones?: ZoneConfig[];
   mower?: MowerConfig;
 }

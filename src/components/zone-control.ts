@@ -419,29 +419,30 @@ export class ZoneControlPanel extends LitElement {
   @property({ attribute: false })
   hass?: HomeAssistant;
 
+  /**
+   * Number of columns for zone controls grid.
+   */
+  @property({ type: Number })
+  columns: number = 1;
+
   static styles = css`
     :host {
       display: block;
     }
 
     .zone-panel {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
+      display: grid;
       gap: 8px;
-    }
-
-    .zone-panel zone-control {
-      flex: 1;
-      min-width: 200px;
     }
   `;
 
   protected render() {
     if (!this.zones || this.zones.length === 0) return nothing;
 
+    const gridStyle = `grid-template-columns: repeat(${this.columns}, 1fr)`;
+
     return html`
-      <div class="zone-panel">
+      <div class="zone-panel" style="${gridStyle}">
         ${this.zones.map(
           (zone) => html`
             <zone-control .zone=${zone} .hass=${this.hass}></zone-control>
