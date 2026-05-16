@@ -101,18 +101,16 @@ export class ZoneEditor extends LitElement {
             class="garden-image"
             @load=${this._handleImageLoad}
           />
-          <svg
-            class="drawing-svg"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <!-- Existing zone polygons (reference) -->
-            ${this._renderExistingZones()}
 
-            <!-- Current polygon being drawn -->
-            ${this._renderCurrentPolygon()}
-          </svg>
+          <!-- Zone fill overlay -->
+          ${this.polygon.length >= 3 ? html`
+            <div class="zone-fill" style="clip-path: polygon(${this.polygon.map(([x, y]) => `${x}% ${y}%`).join(', ')})"></div>
+          ` : nothing}
 
-          <!-- Vertices as HTML elements (not affected by SVG stretching) -->
+          <!-- Lines between vertices -->
+          ${this._renderLines()}
+
+          <!-- Vertices as HTML elements -->
           ${this._renderVerticesAsHtml()}
         </div>
 
@@ -263,6 +261,33 @@ export class ZoneEditor extends LitElement {
         `;
       }
     );
+  }
+
+  /**
+   * Renders CSS lines between consecutive vertices.
+   */
+  private _renderLines() {
+    if (this.polygon.length < 2) return nothing;
+
+    const lines = [];
+    const pts = this._isClosed ? [...this.polygon, this.polygon[0]] : this.polygon;
+
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x1, y1] = pts[i];
+      const [x2, y2] = pts[i + 1];
+      lines.push(html`
+        <svg class="line-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;">
+          <line
+            x1="${x1}%" y1="${y1}%"
+            x2="${x2}%" y2="${y2}%"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      `);
+    }
+    return lines;
   }
 
   // =========================================================================
@@ -558,12 +583,28 @@ export class ZoneEditor extends LitElement {
     }
 
     .drawing-svg {
+      display: none;
+    }
+
+    .zone-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(3, 169, 244, 0.25);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .line-svg {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
+      z-index: 6;
       overflow: visible;
     }
 
@@ -582,8 +623,8 @@ export class ZoneEditor extends LitElement {
     /* Vertex dots (HTML positioned elements) */
     .vertex-dot {
       position: absolute;
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: #ffffff;
       border: 2px solid #03a9f4;
@@ -595,15 +636,15 @@ export class ZoneEditor extends LitElement {
     }
 
     .vertex-dot:hover {
-      transform: translate(-50%, -50%) scale(1.4);
+      transform: translate(-50%, -50%) scale(1.5);
       box-shadow: 0 2px 8px rgba(0,0,0,0.6);
     }
 
     .vertex-dot--first {
       background: #ff5722;
       border-color: #ffffff;
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       cursor: pointer;
     }
 
