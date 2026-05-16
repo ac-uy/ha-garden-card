@@ -51,12 +51,11 @@ export function getMowerActivity(state: string): MowerActivity {
  * Returns an SVG icon path for the given mower activity state.
  */
 export function getActivityIcon(activity: MowerActivity): string {
-  // Always show a mower icon — use mdi:robot-mower path
-  const mowerPath = "M18,13H17.32L15.32,15H17.5A1.5,1.5 0 0,1 19,16.5A1.5,1.5 0 0,1 17.5,18H16.5L16,18.5V19A3,3 0 0,1 13,22A3,3 0 0,1 10,19V18.5L9.5,18H6.5A1.5,1.5 0 0,1 5,16.5A1.5,1.5 0 0,1 6.5,15H8.68L6.68,13H6A4,4 0 0,1 2,9A4,4 0 0,1 6,5H7.08A7,7 0 0,1 12,2A7,7 0 0,1 18,5H18A4,4 0 0,1 22,9A4,4 0 0,1 18,13Z";
+  // Simple lawn mower icon
+  const mowerPath = "M2,10V14H4.26L6,18H18L19.74,14H22V10H19.74L18,6H6L4.26,10H2M6.5,12A1.5,1.5 0 0,1 8,13.5A1.5,1.5 0 0,1 6.5,15A1.5,1.5 0 0,1 5,13.5A1.5,1.5 0 0,1 6.5,12M17.5,12A1.5,1.5 0 0,1 19,13.5A1.5,1.5 0 0,1 17.5,15A1.5,1.5 0 0,1 16,13.5A1.5,1.5 0 0,1 17.5,12Z";
   
   switch (activity) {
     case "error":
-      // Warning triangle for error state
       return "M1,21 L12,2 L23,21 Z M12,14 L12,10 M12,18 L12,16";
     default:
       return mowerPath;
