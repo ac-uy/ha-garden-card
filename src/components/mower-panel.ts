@@ -197,9 +197,8 @@ export class MowerPanel extends LitElement {
     }
 
     .mower-icon {
-      width: 24px;
-      height: 24px;
-      fill: #fff;
+      --mdc-icon-size: 24px;
+      color: #fff;
     }
 
     .mower-icon--mowing {
@@ -403,9 +402,7 @@ export class MowerPanel extends LitElement {
       <div class="mower-panel ${isUnavailable ? "mower-panel--unavailable" : ""}">
         <div class="mower-header">
           <div class="mower-icon-container ${activity === "error" ? "mower-icon-container--error" : ""} ${activity === "mowing" ? "mower-icon-container--mowing" : ""}">
-            <svg class="mower-icon ${activity === "mowing" ? "mower-icon--mowing" : ""}" viewBox="0 0 24 24">
-              <path d="${activityIcon}" />
-            </svg>
+            <ha-icon icon="${activity === "error" ? "mdi:alert" : "mdi:robot-mower"}" class="mower-icon"></ha-icon>
           </div>
 
           <div class="mower-info">
