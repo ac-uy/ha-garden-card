@@ -984,7 +984,7 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
             @pointerdown=${e=>this._handleVertexPointerDown(e,o)}
             @contextmenu=${e=>this._handleVertexContextMenu(e,o)}
           >
-            ${i?V`<span class="vertex-label">Close</span>`:W}
+            ${W}
           </div>
         `})}_renderLines(){if(this.polygon.length<2)return W;const e=[],t=this._isClosed?[...this.polygon,this.polygon[0]]:this.polygon;for(let o=0;o<t.length-1;o++){const[i,n]=t[o],[s,r]=t[o+1];e.push(V`
         <svg class="line-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;">

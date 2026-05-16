@@ -269,7 +269,7 @@ export class ZoneEditor extends LitElement {
             @pointerdown=${(e: PointerEvent) => this._handleVertexPointerDown(e, index)}
             @contextmenu=${(e: Event) => this._handleVertexContextMenu(e, index)}
           >
-            ${isFirst ? html`<span class="vertex-label">Close</span>` : nothing}
+            ${isFirst ? nothing : nothing}
           </div>
         `;
       }
