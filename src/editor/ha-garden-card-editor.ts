@@ -21,6 +21,16 @@ import type {
 // Import the zone editor component
 import "./zone-editor";
 
+// Load HA form elements (ha-entity-picker, etc.)
+const loadHaElements = async () => {
+  const helpers = await (window as any).loadCardHelpers?.();
+  if (helpers) {
+    // This triggers HA to load all form elements
+    await helpers.createCardElement({ type: "entities", entities: [] });
+  }
+};
+loadHaElements();
+
 /**
  * Generates a simple UUID v4 string for new zone IDs.
  */
@@ -39,6 +49,11 @@ export class HaGardenCardEditor extends LitElement {
   @state() private _editingPolygonIndex: number | null = null;
   @state() private _editingMowerZone = false;
   @state() private _editingPoolZone = false;
+
+  // Use light DOM so ha-entity-picker can access HA's custom element registry
+  createRenderRoot() {
+    return this;
+  }
 
   /**
    * Called by HA to provide the current configuration.
