@@ -17,6 +17,9 @@ import type {
   HomeAssistant,
 } from "../models/types";
 
+// Import the zone editor component
+import "./zone-editor";
+
 /**
  * Generates a simple UUID v4 string for new zone IDs.
  */
@@ -32,6 +35,7 @@ function generateId(): string {
 export class HaGardenCardEditor extends LitElement {
   @state() private _config!: GardenCardConfig;
   @state() private _hass?: HomeAssistant;
+  @state() private _editingPolygonIndex: number | null = null;
 
   /**
    * Called by HA to provide the current configuration.
@@ -199,6 +203,35 @@ export class HaGardenCardEditor extends LitElement {
   }
 
   // ===========================================================================
+  // Event Handlers - Polygon Editor
+  // ===========================================================================
+
+  private _handleEditPolygon(index: number): void {
+    this._editingPolygonIndex = this._editingPolygonIndex === index ? null : index;
+  }
+
+  private _handlePolygonChanged(index: number, e: CustomEvent): void {
+    const polygon = e.detail?.polygon || [];
+    const zones = [...(this._config.zones || [])];
+    zones[index] = { ...zones[index], polygon };
+    this._dispatchConfigChanged({
+      ...this._config,
+      zones,
+    });
+  }
+
+  private _handlePolygonComplete(index: number, e: CustomEvent): void {
+    const polygon = e.detail?.polygon || [];
+    const zones = [...(this._config.zones || [])];
+    zones[index] = { ...zones[index], polygon };
+    this._dispatchConfigChanged({
+      ...this._config,
+      zones,
+    });
+    this._editingPolygonIndex = null;
+  }
+
+  // ===========================================================================
   // Event Handlers - Mower
   // ===========================================================================
 
@@ -310,7 +343,7 @@ export class HaGardenCardEditor extends LitElement {
 
   private _renderZoneEntry(zone: ZoneConfig, index: number) {
     const isFirst = index === 0;
-    const isLast = index === this._config.zones.length - 1;
+    const isLast = index === (this._config.zones || []).length - 1;
 
     return html`
       <div class="zone-entry">
@@ -415,6 +448,32 @@ export class HaGardenCardEditor extends LitElement {
                 this._handleZoneScheduleEntityChange(index, e)}
               allow-custom-entity
             ></ha-entity-picker>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Zone Shape</label>
+            <div class="polygon-status">
+              ${zone.polygon && zone.polygon.length >= 3
+                ? html`<span class="polygon-info">✓ ${zone.polygon.length} points defined</span>`
+                : html`<span class="polygon-info polygon-info--empty">No shape defined</span>`}
+              <button
+                class="btn-draw"
+                @click=${() => this._handleEditPolygon(index)}
+              >
+                ${this._editingPolygonIndex === index ? "Close Editor" : "Draw Zone"}
+              </button>
+            </div>
+            ${this._editingPolygonIndex === index
+              ? html`
+                  <zone-editor
+                    .image=${this._config.image || ""}
+                    .existingZones=${(this._config.zones || []).filter((_, i) => i !== index)}
+                    .polygon=${zone.polygon || []}
+                    @polygon-changed=${(e: CustomEvent) => this._handlePolygonChanged(index, e)}
+                    @polygon-complete=${(e: CustomEvent) => this._handlePolygonComplete(index, e)}
+                  ></zone-editor>
+                `
+              : nothing}
           </div>
         </div>
       </div>
@@ -655,6 +714,44 @@ export class HaGardenCardEditor extends LitElement {
     ha-entity-picker {
       display: block;
       width: 100%;
+    }
+
+    .polygon-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .polygon-info {
+      font-size: 13px;
+      color: var(--primary-text-color, #212121);
+      flex: 1;
+    }
+
+    .polygon-info--empty {
+      color: var(--secondary-text-color, #727272);
+      font-style: italic;
+    }
+
+    .btn-draw {
+      padding: 6px 12px;
+      border: 1px solid var(--primary-color, #03a9f4);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--primary-color, #03a9f4);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 200ms ease;
+      white-space: nowrap;
+    }
+
+    .btn-draw:hover {
+      background: rgba(3, 169, 244, 0.1);
+    }
+
+    zone-editor {
+      margin-top: 8px;
     }
   `;
 }
