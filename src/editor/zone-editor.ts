@@ -65,6 +65,9 @@ export class ZoneEditor extends LitElement {
   /** Whether a drag operation occurred (to suppress click after drag). */
   private _didDrag = false;
 
+  /** Pending position during drag (committed on pointerup). */
+  private _pendingPosition: [number, number] | null = null;
+
   // =========================================================================
   // Lifecycle
   // =========================================================================
@@ -386,10 +389,16 @@ export class ZoneEditor extends LitElement {
     const py = e.clientY - rect.top;
     const [xPercent, yPercent] = pixelToPercent(px, py, rect.width, rect.height);
 
-    // Update vertex position
-    const newPolygon = [...this.polygon];
-    newPolygon[this._draggingIndex] = [xPercent, yPercent];
-    this.polygon = newPolygon;
+    // Move the dot element directly (no re-render) for smooth dragging
+    const dots = this.renderRoot.querySelectorAll(".vertex-dot");
+    const dot = dots[this._draggingIndex] as HTMLElement;
+    if (dot) {
+      dot.style.left = `${xPercent}%`;
+      dot.style.top = `${yPercent}%`;
+    }
+
+    // Store the pending position for pointerup
+    this._pendingPosition = [xPercent, yPercent];
   }
 
   /**
@@ -397,11 +406,15 @@ export class ZoneEditor extends LitElement {
    */
   private _handlePointerUp(e: PointerEvent): void {
     if (this._draggingIndex !== null) {
-      this._draggingIndex = null;
-
-      if (this._didDrag) {
+      if (this._didDrag && this._pendingPosition) {
+        // Commit the final position
+        const newPolygon = [...this.polygon];
+        newPolygon[this._draggingIndex] = this._pendingPosition;
+        this.polygon = newPolygon;
         this._dispatchPolygonChanged();
       }
+      this._draggingIndex = null;
+      this._pendingPosition = null;
     }
   }
 
