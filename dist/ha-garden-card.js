@@ -1044,7 +1044,7 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(3, 169, 244, 0.25);
+      background: rgba(3, 169, 244, 0.45);
       pointer-events: none;
       z-index: 5;
     }
