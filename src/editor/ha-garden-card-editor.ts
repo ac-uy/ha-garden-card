@@ -14,6 +14,7 @@ import type {
   GardenCardConfig,
   ZoneConfig,
   MowerConfig,
+  PoolConfig,
   HomeAssistant,
 } from "../models/types";
 
@@ -37,6 +38,7 @@ export class HaGardenCardEditor extends LitElement {
   @state() private _hass?: HomeAssistant;
   @state() private _editingPolygonIndex: number | null = null;
   @state() private _editingMowerZone = false;
+  @state() private _editingPoolZone = false;
 
   /**
    * Called by HA to provide the current configuration.
@@ -254,6 +256,38 @@ export class HaGardenCardEditor extends LitElement {
   }
 
   // ===========================================================================
+  // Event Handlers - Pool
+  // ===========================================================================
+
+  private _handlePoolEntityChange(e: CustomEvent): void {
+    const value = e.detail?.value ?? "";
+    if (!value) {
+      const { pool: _removed, ...rest } = this._config;
+      this._dispatchConfigChanged(rest as GardenCardConfig);
+      return;
+    }
+    const pool: PoolConfig = { ...(this._config.pool || { entity: "" }), entity: value };
+    this._dispatchConfigChanged({ ...this._config, pool });
+  }
+
+  private _handleEditPoolZone(): void {
+    this._editingPoolZone = !this._editingPoolZone;
+  }
+
+  private _handlePoolZoneChanged(e: CustomEvent): void {
+    const polygon = e.detail?.polygon || [];
+    const pool = { ...(this._config.pool || { entity: "" }), zone: polygon };
+    this._dispatchConfigChanged({ ...this._config, pool });
+  }
+
+  private _handlePoolZoneComplete(e: CustomEvent): void {
+    const polygon = e.detail?.polygon || [];
+    const pool = { ...(this._config.pool || { entity: "" }), zone: polygon };
+    this._dispatchConfigChanged({ ...this._config, pool });
+    this._editingPoolZone = false;
+  }
+
+  // ===========================================================================
   // Event Handlers - Mower
   // ===========================================================================
 
@@ -304,6 +338,7 @@ export class HaGardenCardEditor extends LitElement {
         ${this._renderGeneralSection()}
         ${this._renderZonesSection()}
         ${this._renderMowerSection()}
+        ${this._renderPoolSection()}
       </div>
     `;
   }
@@ -552,6 +587,54 @@ export class HaGardenCardEditor extends LitElement {
                         .polygon=${this._config.mower?.zone || []}
                         @polygon-changed=${this._handleMowerZoneChanged}
                         @polygon-complete=${this._handleMowerZoneComplete}
+                      ></zone-editor>
+                    `
+                  : nothing}
+              </div>
+            `
+          : nothing}
+      </div>
+    `;
+  }
+
+  private _renderPoolSection() {
+    return html`
+      <div class="section">
+        <h3 class="section-title">Pool Cleaner (optional)</h3>
+        <div class="field">
+          <label class="field-label">Pool Cleaner Entity</label>
+          <ha-entity-picker
+            .hass=${this._hass}
+            .value=${this._config.pool?.entity || ""}
+            .includeDomains=${["switch", "vacuum", "input_boolean"]}
+            @value-changed=${this._handlePoolEntityChange}
+            allow-custom-entity
+          ></ha-entity-picker>
+        </div>
+
+        ${this._config.pool?.entity
+          ? html`
+              <div class="field">
+                <label class="field-label">Pool Zone</label>
+                <div class="polygon-status">
+                  ${this._config.pool?.zone && this._config.pool.zone.length >= 3
+                    ? html`<span class="polygon-info">✓ ${this._config.pool.zone.length} points defined</span>`
+                    : html`<span class="polygon-info polygon-info--empty">No pool zone defined</span>`}
+                  <button
+                    class="btn-draw"
+                    @click=${this._handleEditPoolZone}
+                  >
+                    ${this._editingPoolZone ? "Close Editor" : "Draw Pool Zone"}
+                  </button>
+                </div>
+                ${this._editingPoolZone
+                  ? html`
+                      <zone-editor
+                        .image=${this._config.image || ""}
+                        .existingZones=${this._config.zones || []}
+                        .polygon=${this._config.pool?.zone || []}
+                        @polygon-changed=${this._handlePoolZoneChanged}
+                        @polygon-complete=${this._handlePoolZoneComplete}
                       ></zone-editor>
                     `
                   : nothing}

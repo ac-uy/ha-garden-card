@@ -55,6 +55,9 @@ function getRelevantEntityIds(config: GardenCardConfig): Set<string> {
     entities.add(config.mower.entity);
     if (config.mower.battery_entity) entities.add(config.mower.battery_entity);
   }
+  if (config.pool) {
+    entities.add(config.pool.entity);
+  }
   return entities;
 }
 
@@ -282,6 +285,15 @@ export class HaGardenCard extends LitElement {
     return entity?.state === "mowing";
   }
 
+  /**
+   * Whether the pool cleaner is currently running.
+   */
+  private get _isPoolRunning(): boolean {
+    if (!this._hass || !this._config?.pool) return false;
+    const entity = this._hass.states[this._config.pool.entity];
+    return entity?.state === "on" || entity?.state === "cleaning";
+  }
+
   protected render() {
     if (!this._config) {
       return nothing;
@@ -309,7 +321,15 @@ export class HaGardenCard extends LitElement {
             <mower-animation
               .active=${this._isMowerMowing}
               .zone=${this._config.mower?.zone || []}
+              icon="mdi:robot-mower"
             ></mower-animation>
+            ${this._config.pool ? html`
+              <mower-animation
+                .active=${this._isPoolRunning}
+                .zone=${this._config.pool?.zone || []}
+                icon="${this._config.pool?.icon || 'mdi:pool'}"
+              ></mower-animation>
+            ` : nothing}
           </div>
 
           <!-- Zone Controls and Schedule -->

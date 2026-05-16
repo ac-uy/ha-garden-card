@@ -21,6 +21,7 @@ export interface GardenCardConfig {
   zones_columns?: number; // Number of zone control columns (default: 1 for compact, 2 for medium/wide)
   zones?: ZoneConfig[];
   mower?: MowerConfig;
+  pool?: PoolConfig;
 }
 
 /**
@@ -46,6 +47,15 @@ export interface MowerConfig {
   entity: string; // lawn_mower.* entity_id
   battery_entity?: string; // sensor.* entity for battery level
   zone?: [number, number][]; // polygon defining mower area on the image
+}
+
+/**
+ * Configuration for the pool cleaner.
+ */
+export interface PoolConfig {
+  entity: string; // switch.* or vacuum.* entity_id for pool cleaner
+  zone?: [number, number][]; // polygon defining pool area on the image
+  icon?: string; // custom icon (default: mdi:pool)
 }
 
 // =============================================================================
