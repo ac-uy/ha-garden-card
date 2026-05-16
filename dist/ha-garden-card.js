@@ -886,7 +886,14 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
             @load=${this._handleImageLoad}
           />
 
-          <!-- Zone fill overlay -->
+          <!-- Other zones overlay (reference) -->
+          ${this.existingZones.filter(e=>e.polygon&&e.polygon.length>=3).map(e=>V`
+            <div class="existing-zone-fill" style="clip-path: polygon(${e.polygon.map(([e,t])=>`${e}% ${t}%`).join(", ")}); background-color: ${e.color||"#888"};">
+              <span class="existing-zone-label">${e.name}</span>
+            </div>
+          `)}
+
+          <!-- Current zone fill overlay -->
           ${this.polygon.length>=3?V`
             <div class="zone-fill" style="clip-path: polygon(${this.polygon.map(([e,t])=>`${e}% ${t}%`).join(", ")})"></div>
           `:q}
@@ -1047,6 +1054,28 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
       background: rgba(3, 169, 244, 0.45);
       pointer-events: none;
       z-index: 5;
+    }
+
+    .existing-zone-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .existing-zone-label {
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      pointer-events: none;
     }
 
     .line-svg {

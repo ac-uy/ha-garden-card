@@ -102,7 +102,14 @@ export class ZoneEditor extends LitElement {
             @load=${this._handleImageLoad}
           />
 
-          <!-- Zone fill overlay -->
+          <!-- Other zones overlay (reference) -->
+          ${this.existingZones.filter(z => z.polygon && z.polygon.length >= 3).map(zone => html`
+            <div class="existing-zone-fill" style="clip-path: polygon(${zone.polygon!.map(([x, y]) => `${x}% ${y}%`).join(', ')}); background-color: ${zone.color || '#888'};">
+              <span class="existing-zone-label">${zone.name}</span>
+            </div>
+          `)}
+
+          <!-- Current zone fill overlay -->
           ${this.polygon.length >= 3 ? html`
             <div class="zone-fill" style="clip-path: polygon(${this.polygon.map(([x, y]) => `${x}% ${y}%`).join(', ')})"></div>
           ` : nothing}
@@ -595,6 +602,28 @@ export class ZoneEditor extends LitElement {
       background: rgba(3, 169, 244, 0.45);
       pointer-events: none;
       z-index: 5;
+    }
+
+    .existing-zone-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .existing-zone-label {
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      pointer-events: none;
     }
 
     .line-svg {
