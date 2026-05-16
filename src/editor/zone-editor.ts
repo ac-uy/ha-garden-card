@@ -212,10 +212,9 @@ export class ZoneEditor extends LitElement {
       return html`
         <polygon
           points="${points}"
-          fill="${this.color}"
-          opacity="0.35"
+          fill="rgba(3, 169, 244, 0.3)"
           stroke="#ffffff"
-          stroke-width="1.2"
+          stroke-width="0.5"
           stroke-linejoin="round"
         />
       `;
@@ -228,8 +227,7 @@ export class ZoneEditor extends LitElement {
       <!-- Semi-transparent fill preview -->
       <polygon
         points="${previewPoints}"
-        fill="${this.color}"
-        opacity="0.2"
+        fill="rgba(3, 169, 244, 0.25)"
         stroke="none"
       />
       <!-- Visible stroke for the drawn lines -->
@@ -237,10 +235,9 @@ export class ZoneEditor extends LitElement {
         points="${points}"
         fill="none"
         stroke="#ffffff"
-        stroke-width="1.2"
+        stroke-width="0.5"
         stroke-linecap="round"
         stroke-linejoin="round"
-        stroke-dasharray="2,1"
       />
     `;
   }
@@ -585,11 +582,11 @@ export class ZoneEditor extends LitElement {
     /* Vertex dots (HTML positioned elements) */
     .vertex-dot {
       position: absolute;
-      width: 16px;
-      height: 16px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       background: #ffffff;
-      border: 3px solid #03a9f4;
+      border: 2px solid #03a9f4;
       transform: translate(-50%, -50%);
       cursor: grab;
       z-index: 10;
@@ -605,8 +602,8 @@ export class ZoneEditor extends LitElement {
     .vertex-dot--first {
       background: #ff5722;
       border-color: #ffffff;
-      width: 22px;
-      height: 22px;
+      width: 16px;
+      height: 16px;
       cursor: pointer;
     }
 
