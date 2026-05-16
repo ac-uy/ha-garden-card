@@ -261,7 +261,7 @@ export class GardenImageLayer extends LitElement {
    */
   private _computeZoneRenderData(): ZoneRenderData[] {
     return this.zones.map((zone) => {
-      const entity = this.hass?.states[zone.entity];
+      const entity = zone.entity ? this.hass?.states[zone.entity] : undefined;
       const state = entity?.state ?? "unavailable";
 
       const isActive = state === "on";
@@ -270,7 +270,7 @@ export class GardenImageLayer extends LitElement {
 
       // Convert polygon coordinates to SVG points string
       // Each coordinate pair [x, y] becomes "x,y" separated by spaces
-      const points = zone.polygon.map(([x, y]) => `${x},${y}`).join(" ");
+      const points = (zone.polygon || []).map(([x, y]) => `${x},${y}`).join(" ");
 
       // Determine opacity based on entity state
       let opacity: number;
@@ -303,7 +303,7 @@ export class GardenImageLayer extends LitElement {
     const zone = this.zones.find((z) => z.id === zoneId);
     if (!zone) return;
 
-    const entity = this.hass?.states[zone.entity];
+    const entity = zone.entity ? this.hass?.states[zone.entity] : undefined;
     const state = entity?.state ?? "unavailable";
     if (state === "unavailable" || state === "unknown") return;
 

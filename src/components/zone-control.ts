@@ -213,7 +213,7 @@ export class ZoneControl extends LitElement {
    * Gets the entity state for this zone.
    */
   private get _entityState(): string {
-    if (!this.hass || !this.zone) return "unavailable";
+    if (!this.hass || !this.zone || !this.zone.entity) return "unavailable";
     const entity = this.hass.states[this.zone.entity];
     return entity?.state ?? "unavailable";
   }

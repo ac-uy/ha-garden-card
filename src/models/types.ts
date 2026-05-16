@@ -17,7 +17,7 @@ export interface GardenCardConfig {
   type: "custom:ha-garden-card";
   title?: string;
   image?: string; // URL to garden/backyard image
-  zones: ZoneConfig[];
+  zones?: ZoneConfig[];
   mower?: MowerConfig;
 }
 
@@ -29,9 +29,9 @@ export interface GardenCardConfig {
 export interface ZoneConfig {
   id: string; // unique zone identifier (uuid)
   name: string; // display name
-  entity: string; // switch.* or valve.* entity_id
+  entity?: string; // switch.* or valve.* entity_id (optional during setup)
   color: string; // hex color for overlay (#RRGGBB)
-  polygon: [number, number][]; // array of [x%, y%] coordinates (0-100)
+  polygon?: [number, number][]; // array of [x%, y%] coordinates (0-100)
   duration_entity?: string; // number.* entity for duration setting
   countdown_entity?: string; // sensor.* entity for remaining time
   schedule_entity?: string; // input_datetime / schedule / sensor entity

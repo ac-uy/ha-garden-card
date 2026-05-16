@@ -44,8 +44,8 @@ import type { WaterAnimationZone } from "./components/water-animation";
  */
 function getRelevantEntityIds(config: GardenCardConfig): Set<string> {
   const entities = new Set<string>();
-  for (const zone of config.zones) {
-    entities.add(zone.entity);
+  for (const zone of (config.zones || [])) {
+    if (zone.entity) entities.add(zone.entity);
     if (zone.duration_entity) entities.add(zone.duration_entity);
     if (zone.countdown_entity) entities.add(zone.countdown_entity);
     if (zone.schedule_entity) entities.add(zone.schedule_entity);
@@ -122,7 +122,7 @@ export class HaGardenCard extends LitElement {
     let size = 3;
 
     // Add size for zones (each zone adds roughly half a row)
-    size += Math.ceil(this._config.zones.length / 2);
+    size += Math.ceil((this._config.zones || []).length / 2);
 
     // Add size for mower panel if configured
     if (this._config.mower) {
@@ -253,11 +253,11 @@ export class HaGardenCard extends LitElement {
   private get _waterAnimationZones(): WaterAnimationZone[] {
     if (!this._hass || !this._config) return [];
 
-    return this._config.zones.map((zone) => {
-      const entity = this._hass!.states[zone.entity];
+    return (this._config.zones || []).map((zone) => {
+      const entity = zone.entity ? this._hass!.states[zone.entity] : undefined;
       const state = entity?.state ?? "unavailable";
       const isActive = state === "on" || state === "open";
-      const points = zone.polygon.map(([x, y]) => `${x},${y}`).join(" ");
+      const points = (zone.polygon || []).map(([x, y]) => `${x},${y}`).join(" ");
 
       return {
         id: zone.id,
@@ -284,7 +284,7 @@ export class HaGardenCard extends LitElement {
           <!-- Garden Image Layer with SVG zone overlays and water animation -->
           <div class="image-section">
             <garden-image-layer
-              .zones=${this._config.zones}
+              .zones=${this._config.zones || []}
               .hass=${this._hass}
               .image=${this._config.image}
               @zone-tap=${this._handleZoneTap}
@@ -297,12 +297,12 @@ export class HaGardenCard extends LitElement {
           <!-- Zone Controls and Schedule -->
           <div class="controls-section">
             <zone-control-panel
-              .zones=${this._config.zones}
+              .zones=${this._config.zones || []}
               .hass=${this._hass}
             ></zone-control-panel>
 
             <schedule-view
-              .zones=${this._config.zones}
+              .zones=${this._config.zones || []}
               .hass=${this._hass}
             ></schedule-view>
           </div>

@@ -32,16 +32,11 @@ export function validateConfig(config: GardenCardConfig): void {
     throw new Error("Configuration is required");
   }
 
-  if (!config.zones || !Array.isArray(config.zones)) {
-    throw new Error("Please define at least one zone");
-  }
-
-  if (config.zones.length === 0) {
-    throw new Error("Please define at least one zone");
-  }
-
-  for (const zone of config.zones) {
-    validateZone(zone);
+  // Zones are optional — card can render with just image/mower
+  if (config.zones && Array.isArray(config.zones)) {
+    for (const zone of config.zones) {
+      validateZone(zone);
+    }
   }
 }
 
@@ -62,11 +57,8 @@ function validateZone(zone: ZoneConfig): void {
     throw new Error(`Zone '${zone.id}' is missing a name`);
   }
 
-  if (!zone.entity) {
-    throw new Error(`Zone '${name}' is missing an entity`);
-  }
-
-  if (!ZONE_ENTITY_REGEX.test(zone.entity)) {
+  // Entity is optional during initial setup
+  if (zone.entity && !ZONE_ENTITY_REGEX.test(zone.entity)) {
     throw new Error(
       `Zone '${name}' has invalid entity '${zone.entity}'. Must be switch.*, valve.*, or input_boolean.*`
     );
@@ -80,28 +72,31 @@ function validateZone(zone: ZoneConfig): void {
     throw new Error(`Zone '${name}' has invalid color format`);
   }
 
-  if (!zone.polygon || !Array.isArray(zone.polygon)) {
-    throw new Error(`Zone '${name}' is missing polygon coordinates`);
-  }
-
-  if (zone.polygon.length < 3) {
-    throw new Error(
-      `Zone '${name}' polygon must have at least 3 points`
-    );
-  }
-
-  for (const point of zone.polygon) {
-    if (
-      !Array.isArray(point) ||
-      point.length !== 2 ||
-      typeof point[0] !== "number" ||
-      typeof point[1] !== "number" ||
-      point[0] < 0 ||
-      point[0] > 100 ||
-      point[1] < 0 ||
-      point[1] > 100
-    ) {
+  // Polygon is optional during initial setup (editor will add it)
+  if (zone.polygon) {
+    if (!Array.isArray(zone.polygon)) {
       throw new Error(`Zone '${name}' has invalid polygon coordinates`);
+    }
+
+    if (zone.polygon.length > 0 && zone.polygon.length < 3) {
+      throw new Error(
+        `Zone '${name}' polygon must have at least 3 points`
+      );
+    }
+
+    for (const point of zone.polygon) {
+      if (
+        !Array.isArray(point) ||
+        point.length !== 2 ||
+        typeof point[0] !== "number" ||
+        typeof point[1] !== "number" ||
+        point[0] < 0 ||
+        point[0] > 100 ||
+        point[1] < 0 ||
+        point[1] > 100
+      ) {
+        throw new Error(`Zone '${name}' has invalid polygon coordinates`);
+      }
     }
   }
 }
