@@ -116,7 +116,7 @@ export class ZoneEditor extends LitElement {
         <div class="editor-controls">
           ${this._isClosed
             ? html`
-                <span class="status-text">Polygon complete</span>
+                <span class="status-text">✓ Polygon complete (${this.polygon.length} points)</span>
                 <button class="btn btn-secondary" @click=${this._handleReset}>
                   Reset
                 </button>
@@ -127,6 +127,11 @@ export class ZoneEditor extends LitElement {
                     ? "Click on the image to add points"
                     : `${this.polygon.length} point${this.polygon.length !== 1 ? "s" : ""} — click first point or Confirm to close`}
                 </span>
+                ${this.polygon.length > 0
+                  ? html`<button class="btn btn-danger" @click=${this._handleRemoveLastPoint}>
+                      Undo
+                    </button>`
+                  : nothing}
                 <button class="btn btn-primary" @click=${this._handleConfirm}>
                   Confirm
                 </button>
@@ -147,7 +152,7 @@ export class ZoneEditor extends LitElement {
       (zone) => html`
         <g class="existing-zone">
           <polygon
-            points="${zone.polygon.map(([x, y]) => `${x},${y}`).join(" ")}"
+            points="${(zone.polygon || []).map(([x, y]) => `${x},${y}`).join(" ")}"
             fill="${zone.color}"
             opacity="0.25"
             stroke="${zone.color}"
@@ -164,7 +169,7 @@ export class ZoneEditor extends LitElement {
    * Renders a zone name label at the centroid of the polygon.
    */
   private _renderZoneLabel(zone: ZoneConfig) {
-    if (zone.polygon.length < 3) return nothing;
+    if (!zone.polygon || zone.polygon.length < 3) return nothing;
 
     // Compute centroid
     const cx =
@@ -190,32 +195,45 @@ export class ZoneEditor extends LitElement {
    * Renders the current polygon being drawn (lines between vertices).
    */
   private _renderCurrentPolygon() {
-    if (this.polygon.length < 2) return nothing;
+    if (this.polygon.length < 2) {
+      // Even with 1 point, show a single dot
+      if (this.polygon.length === 1) return nothing;
+      return nothing;
+    }
 
     if (this._isClosed) {
-      // Render as a closed polygon
+      // Render as a closed polygon with visible fill
       const points = this.polygon.map(([x, y]) => `${x},${y}`).join(" ");
       return html`
         <polygon
           points="${points}"
-          fill="var(--primary-color, #03a9f4)"
-          opacity="0.3"
-          stroke="var(--primary-color, #03a9f4)"
-          stroke-width="0.4"
+          fill="rgba(3, 169, 244, 0.35)"
+          stroke="#ffffff"
+          stroke-width="0.8"
+          stroke-linejoin="round"
         />
       `;
     }
 
-    // Render as open polyline
+    // Render as open polyline with fill preview (connect back to first point)
     const points = this.polygon.map(([x, y]) => `${x},${y}`).join(" ");
+    const previewPoints = [...this.polygon, this.polygon[0]].map(([x, y]) => `${x},${y}`).join(" ");
     return html`
+      <!-- Semi-transparent fill preview -->
+      <polygon
+        points="${previewPoints}"
+        fill="rgba(3, 169, 244, 0.2)"
+        stroke="none"
+      />
+      <!-- Visible stroke for the drawn lines -->
       <polyline
         points="${points}"
         fill="none"
-        stroke="var(--primary-color, #03a9f4)"
-        stroke-width="0.4"
+        stroke="#ffffff"
+        stroke-width="0.8"
         stroke-linecap="round"
         stroke-linejoin="round"
+        stroke-dasharray="2,1"
       />
     `;
   }
@@ -230,16 +248,18 @@ export class ZoneEditor extends LitElement {
           cx="${x}"
           cy="${y}"
           r="${index === 0 && !this._isClosed && this.polygon.length > 2
-            ? "1.8"
-            : "1.2"}"
+            ? "3"
+            : "2"}"
           class="vertex ${index === 0 && !this._isClosed && this.polygon.length > 2
             ? "vertex--first"
             : ""} ${this._draggingIndex === index ? "vertex--dragging" : ""}"
           fill="${index === 0 && !this._isClosed && this.polygon.length > 2
             ? "#ff5722"
-            : "var(--primary-color, #03a9f4)"}"
-          stroke="white"
-          stroke-width="0.3"
+            : "#ffffff"}"
+          stroke="${index === 0 && !this._isClosed && this.polygon.length > 2
+            ? "#ffffff"
+            : "#03a9f4"}"
+          stroke-width="0.5"
           data-index="${index}"
           @pointerdown=${(e: PointerEvent) => this._handleVertexPointerDown(e, index)}
           @contextmenu=${(e: Event) => this._handleVertexContextMenu(e, index)}
@@ -378,6 +398,16 @@ export class ZoneEditor extends LitElement {
     e.preventDefault();
     e.stopPropagation();
     this._deleteVertex(index);
+  }
+
+  /**
+   * Handles the Undo (remove last point) button click.
+   */
+  private _handleRemoveLastPoint(): void {
+    if (this.polygon.length === 0) return;
+    this.polygon = this.polygon.slice(0, -1);
+    this._clearValidationMessage();
+    this._dispatchPolygonChanged();
   }
 
   /**
@@ -562,23 +592,25 @@ export class ZoneEditor extends LitElement {
     .vertex {
       cursor: grab;
       transition: r 150ms ease;
+      filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
     }
 
     .vertex:hover {
-      r: 1.8;
+      r: 3;
     }
 
     .vertex--first {
       cursor: pointer;
+      filter: drop-shadow(0 0 3px rgba(255,87,34,0.8));
     }
 
     .vertex--first:hover {
-      r: 2.2;
+      r: 4;
     }
 
     .vertex--dragging {
       cursor: grabbing;
-      r: 2;
+      r: 3.5;
     }
 
     /* Editor controls bar */
@@ -637,6 +669,16 @@ export class ZoneEditor extends LitElement {
 
     .btn-secondary:hover {
       background: var(--divider-color, #e0e0e0);
+    }
+
+    .btn-danger {
+      background: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+      border: 1px solid #f44336;
+    }
+
+    .btn-danger:hover {
+      background: rgba(244, 67, 54, 0.2);
     }
   `;
 }
