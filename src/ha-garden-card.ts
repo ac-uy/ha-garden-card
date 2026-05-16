@@ -210,6 +210,10 @@ export class HaGardenCard extends LitElement {
    * Gets the current layout mode based on card width.
    */
   private get _layoutMode(): LayoutMode {
+    // Allow config to force a specific layout
+    if (this._config?.layout) {
+      return this._config.layout as LayoutMode;
+    }
     return getLayoutMode(this._cardWidth || 400);
   }
 

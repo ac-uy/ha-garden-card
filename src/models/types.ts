@@ -17,6 +17,7 @@ export interface GardenCardConfig {
   type: "custom:ha-garden-card";
   title?: string;
   image?: string; // URL to garden/backyard image
+  layout?: string; // Force layout: "compact", "medium", or "wide"
   zones?: ZoneConfig[];
   mower?: MowerConfig;
 }
