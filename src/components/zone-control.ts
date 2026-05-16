@@ -426,8 +426,14 @@ export class ZoneControlPanel extends LitElement {
 
     .zone-panel {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
+      flex-wrap: wrap;
       gap: 8px;
+    }
+
+    .zone-panel zone-control {
+      flex: 1;
+      min-width: 200px;
     }
   `;
 
