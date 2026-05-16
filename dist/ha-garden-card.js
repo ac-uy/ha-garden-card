@@ -887,9 +887,7 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
           />
           <svg
             class="drawing-svg"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            style="pointer-events: none;"
+            xmlns="http://www.w3.org/2000/svg"
           >
             <!-- Existing zone polygons (reference) -->
             ${this._renderExistingZones()}
@@ -930,7 +928,7 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
       `}_renderExistingZones(){return this.existingZones.map(e=>V`
         <g class="existing-zone">
           <polygon
-            points="${(e.polygon||[]).map(([e,t])=>`${e},${t}`).join(" ")}"
+            points="${(e.polygon||[]).map(([e,t])=>`${e}%,${t}%`).join(" ")}"
             fill="${e.color}"
             opacity="0.25"
             stroke="${e.color}"
@@ -950,16 +948,15 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
       >
         ${e.name}
       </text>
-    `}_renderCurrentPolygon(){if(this.polygon.length<2)return this.polygon.length,q;if(this._isClosed){const e=this.polygon.map(([e,t])=>`${e},${t}`).join(" ");return V`
+    `}_renderCurrentPolygon(){if(this.polygon.length<2)return this.polygon.length,q;if(this._isClosed){const e=this.polygon.map(([e,t])=>`${e}%,${t}%`).join(" ");return V`
         <polygon
           points="${e}"
           fill="rgba(3, 169, 244, 0.3)"
           stroke="#ffffff"
           stroke-width="2"
           stroke-linejoin="round"
-          vector-effect="non-scaling-stroke"
         />
-      `}const e=this.polygon.map(([e,t])=>`${e},${t}`).join(" "),t=[...this.polygon,this.polygon[0]].map(([e,t])=>`${e},${t}`).join(" ");return V`
+      `}const e=this.polygon.map(([e,t])=>`${e}%,${t}%`).join(" "),t=[...this.polygon,this.polygon[0]].map(([e,t])=>`${e}%,${t}%`).join(" ");return V`
       <!-- Semi-transparent fill preview -->
       <polygon
         points="${t}"
@@ -974,7 +971,6 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
-        vector-effect="non-scaling-stroke"
       />
     `}_renderVerticesAsHtml(){return this.polygon.map(([e,t],o)=>{const i=0===o&&!this._isClosed&&this.polygon.length>2,n=this._draggingIndex===o;return V`
           <div
@@ -1036,7 +1032,8 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
       left: 0;
       width: 100%;
       height: 100%;
-      touch-action: none;
+      pointer-events: none;
+      overflow: visible;
     }
 
     /* Existing zone polygons (reference) */
@@ -1054,28 +1051,28 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
     /* Vertex dots (HTML positioned elements) */
     .vertex-dot {
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: #ffffff;
       border: 2px solid #03a9f4;
       transform: translate(-50%, -50%);
       cursor: grab;
       z-index: 10;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
       transition: transform 150ms ease, box-shadow 150ms ease;
     }
 
     .vertex-dot:hover {
-      transform: translate(-50%, -50%) scale(1.3);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+      transform: translate(-50%, -50%) scale(1.4);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
     }
 
     .vertex-dot--first {
       background: #ff5722;
       border-color: #ffffff;
-      width: 16px;
-      height: 16px;
+      width: 12px;
+      height: 12px;
       cursor: pointer;
     }
 

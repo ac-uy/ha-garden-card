@@ -103,9 +103,7 @@ export class ZoneEditor extends LitElement {
           />
           <svg
             class="drawing-svg"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            style="pointer-events: none;"
+            xmlns="http://www.w3.org/2000/svg"
           >
             <!-- Existing zone polygons (reference) -->
             ${this._renderExistingZones()}
@@ -158,7 +156,7 @@ export class ZoneEditor extends LitElement {
       (zone) => html`
         <g class="existing-zone">
           <polygon
-            points="${(zone.polygon || []).map(([x, y]) => `${x},${y}`).join(" ")}"
+            points="${(zone.polygon || []).map(([x, y]) => `${x}%,${y}%`).join(" ")}"
             fill="${zone.color}"
             opacity="0.25"
             stroke="${zone.color}"
@@ -209,7 +207,7 @@ export class ZoneEditor extends LitElement {
 
     if (this._isClosed) {
       // Render as a closed polygon with visible fill
-      const points = this.polygon.map(([x, y]) => `${x},${y}`).join(" ");
+      const points = this.polygon.map(([x, y]) => `${x}%,${y}%`).join(" ");
       return html`
         <polygon
           points="${points}"
@@ -217,14 +215,13 @@ export class ZoneEditor extends LitElement {
           stroke="#ffffff"
           stroke-width="2"
           stroke-linejoin="round"
-          vector-effect="non-scaling-stroke"
         />
       `;
     }
 
     // Render as open polyline with fill preview (connect back to first point)
-    const points = this.polygon.map(([x, y]) => `${x},${y}`).join(" ");
-    const previewPoints = [...this.polygon, this.polygon[0]].map(([x, y]) => `${x},${y}`).join(" ");
+    const points = this.polygon.map(([x, y]) => `${x}%,${y}%`).join(" ");
+    const previewPoints = [...this.polygon, this.polygon[0]].map(([x, y]) => `${x}%,${y}%`).join(" ");
     return html`
       <!-- Semi-transparent fill preview -->
       <polygon
@@ -240,7 +237,6 @@ export class ZoneEditor extends LitElement {
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
-        vector-effect="non-scaling-stroke"
       />
     `;
   }
@@ -567,7 +563,8 @@ export class ZoneEditor extends LitElement {
       left: 0;
       width: 100%;
       height: 100%;
-      touch-action: none;
+      pointer-events: none;
+      overflow: visible;
     }
 
     /* Existing zone polygons (reference) */
@@ -585,28 +582,28 @@ export class ZoneEditor extends LitElement {
     /* Vertex dots (HTML positioned elements) */
     .vertex-dot {
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: #ffffff;
       border: 2px solid #03a9f4;
       transform: translate(-50%, -50%);
       cursor: grab;
       z-index: 10;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
       transition: transform 150ms ease, box-shadow 150ms ease;
     }
 
     .vertex-dot:hover {
-      transform: translate(-50%, -50%) scale(1.3);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+      transform: translate(-50%, -50%) scale(1.4);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
     }
 
     .vertex-dot--first {
       background: #ff5722;
       border-color: #ffffff;
-      width: 16px;
-      height: 16px;
+      width: 12px;
+      height: 12px;
       cursor: pointer;
     }
 
