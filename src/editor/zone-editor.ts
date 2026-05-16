@@ -362,18 +362,12 @@ export class ZoneEditor extends LitElement {
     e.preventDefault();
     e.stopPropagation();
 
-    // Start long-press timer for deletion
-    this._longPressTimer = setTimeout(() => {
-      this._deleteVertex(index);
-      this._longPressTimer = null;
-    }, LONG_PRESS_DURATION);
-
-    // Start drag tracking
+    // Start drag tracking (no long-press timer — use right-click to delete)
     this._draggingIndex = index;
     this._didDrag = false;
 
     // Capture pointer for drag
-    const target = e.target as SVGElement;
+    const target = e.target as HTMLElement;
     target.setPointerCapture(e.pointerId);
   }
 
@@ -383,8 +377,6 @@ export class ZoneEditor extends LitElement {
   private _handlePointerMove(e: PointerEvent): void {
     if (this._draggingIndex === null) return;
 
-    // Cancel long-press if we moved
-    this._clearLongPress();
     this._didDrag = true;
 
     const container = this.renderRoot.querySelector(".canvas-container") as HTMLElement;
@@ -407,7 +399,7 @@ export class ZoneEditor extends LitElement {
   private _handlePointerUp(e: PointerEvent): void {
     if (this._draggingIndex !== null) {
       // Release pointer capture
-      const target = e.target as SVGElement;
+      const target = e.target as HTMLElement;
       if (target.hasPointerCapture?.(e.pointerId)) {
         target.releasePointerCapture(e.pointerId);
       }
@@ -418,8 +410,6 @@ export class ZoneEditor extends LitElement {
         this._dispatchPolygonChanged();
       }
     }
-
-    this._clearLongPress();
   }
 
   /**
