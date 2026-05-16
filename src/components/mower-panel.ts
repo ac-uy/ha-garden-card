@@ -51,25 +51,15 @@ export function getMowerActivity(state: string): MowerActivity {
  * Returns an SVG icon path for the given mower activity state.
  */
 export function getActivityIcon(activity: MowerActivity): string {
+  // Always show a mower icon — use mdi:robot-mower path
+  const mowerPath = "M18,13H17.32L15.32,15H17.5A1.5,1.5 0 0,1 19,16.5A1.5,1.5 0 0,1 17.5,18H16.5L16,18.5V19A3,3 0 0,1 13,22A3,3 0 0,1 10,19V18.5L9.5,18H6.5A1.5,1.5 0 0,1 5,16.5A1.5,1.5 0 0,1 6.5,15H8.68L6.68,13H6A4,4 0 0,1 2,9A4,4 0 0,1 6,5H7.08A7,7 0 0,1 12,2A7,7 0 0,1 18,5H18A4,4 0 0,1 22,9A4,4 0 0,1 18,13Z";
+  
   switch (activity) {
-    case "mowing":
-      // Mower/grass cutting icon
-      return "M5,11 L5,7 L9,7 L9,4 L15,4 L15,7 L19,7 L19,11 L5,11 Z M7,13 A2,2 0 1,0 7,17 A2,2 0 1,0 7,13 M17,13 A2,2 0 1,0 17,17 A2,2 0 1,0 17,13";
-    case "docked":
-      // Home/dock icon
-      return "M12,3 L2,12 L5,12 L5,20 L10,20 L10,14 L14,14 L14,20 L19,20 L19,12 L22,12 Z";
-    case "paused":
-      // Pause icon
-      return "M6,4 L10,4 L10,20 L6,20 Z M14,4 L18,4 L18,20 L14,20 Z";
-    case "returning":
-      // Return/arrow icon
-      return "M19,11 L19,13 L7.83,13 L12.41,17.59 L11,19 L4,12 L11,5 L12.41,6.41 L7.83,11 L19,11 Z";
     case "error":
-      // Warning triangle icon
+      // Warning triangle for error state
       return "M1,21 L12,2 L23,21 Z M12,14 L12,10 M12,18 L12,16";
     default:
-      // Question mark / unknown
-      return "M12,2 A10,10 0 1,0 12,22 A10,10 0 1,0 12,2 M12,8 A2,2 0 0,1 14,10 Q14,12 12,13 M12,16 L12,17";
+      return mowerPath;
   }
 }
 
