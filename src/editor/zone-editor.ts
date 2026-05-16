@@ -89,7 +89,12 @@ export class ZoneEditor extends LitElement {
 
     return html`
       <div class="zone-editor">
-        <div class="canvas-container">
+        <div class="canvas-container"
+          @click=${this._handleCanvasClick}
+          @pointermove=${this._handlePointerMove}
+          @pointerup=${this._handlePointerUp}
+          @contextmenu=${this._handleContextMenu}
+        >
           <img
             src="${this.image}"
             alt="Garden"
@@ -100,20 +105,16 @@ export class ZoneEditor extends LitElement {
             class="drawing-svg"
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
-            @click=${this._handleSvgClick}
-            @pointermove=${this._handlePointerMove}
-            @pointerup=${this._handlePointerUp}
-            @contextmenu=${this._handleContextMenu}
           >
             <!-- Existing zone polygons (reference) -->
             ${this._renderExistingZones()}
 
             <!-- Current polygon being drawn -->
             ${this._renderCurrentPolygon()}
-
-            <!-- Vertices (draggable circles) -->
-            ${this._renderVertices()}
           </svg>
+
+          <!-- Vertices as HTML elements (not affected by SVG stretching) -->
+          ${this._renderVerticesAsHtml()}
         </div>
 
         <!-- Controls -->
@@ -245,32 +246,26 @@ export class ZoneEditor extends LitElement {
   }
 
   /**
-   * Renders draggable vertex circles.
+   * Renders vertices as absolutely-positioned HTML dots.
+   * These are not affected by SVG preserveAspectRatio stretching.
    */
-  private _renderVertices() {
+  private _renderVerticesAsHtml() {
     return this.polygon.map(
-      ([x, y], index) => html`
-        <circle
-          cx="${x}"
-          cy="${y}"
-          r="${index === 0 && !this._isClosed && this.polygon.length > 2
-            ? "4.5"
-            : "3.5"}"
-          class="vertex ${index === 0 && !this._isClosed && this.polygon.length > 2
-            ? "vertex--first"
-            : ""} ${this._draggingIndex === index ? "vertex--dragging" : ""}"
-          fill="${index === 0 && !this._isClosed && this.polygon.length > 2
-            ? "#ff5722"
-            : "#ffffff"}"
-          stroke="${index === 0 && !this._isClosed && this.polygon.length > 2
-            ? "#ffffff"
-            : "#03a9f4"}"
-          stroke-width="0.8"
-          data-index="${index}"
-          @pointerdown=${(e: PointerEvent) => this._handleVertexPointerDown(e, index)}
-          @contextmenu=${(e: Event) => this._handleVertexContextMenu(e, index)}
-        />
-      `
+      ([x, y], index) => {
+        const isFirst = index === 0 && !this._isClosed && this.polygon.length > 2;
+        const isDragging = this._draggingIndex === index;
+        return html`
+          <div
+            class="vertex-dot ${isFirst ? 'vertex-dot--first' : ''} ${isDragging ? 'vertex-dot--dragging' : ''}"
+            style="left: ${x}%; top: ${y}%;"
+            data-index="${index}"
+            @pointerdown=${(e: PointerEvent) => this._handleVertexPointerDown(e, index)}
+            @contextmenu=${(e: Event) => this._handleVertexContextMenu(e, index)}
+          >
+            ${isFirst ? html`<span class="vertex-label">Close</span>` : nothing}
+          </div>
+        `;
+      }
     );
   }
 
@@ -288,7 +283,7 @@ export class ZoneEditor extends LitElement {
   /**
    * Handles click on the SVG canvas to add a new vertex.
    */
-  private _handleSvgClick(e: MouseEvent): void {
+  private _handleCanvasClick(e: MouseEvent): void {
     // Don't add vertex if we just finished dragging
     if (this._didDrag) {
       this._didDrag = false;
@@ -298,14 +293,17 @@ export class ZoneEditor extends LitElement {
     // Don't add vertices if polygon is closed
     if (this._isClosed) return;
 
-    // Don't add vertex if clicking on an existing vertex (handled separately)
-    const target = e.target as SVGElement;
-    if (target.tagName === "circle") return;
+    // Don't add vertex if clicking on a vertex dot
+    const target = e.target as HTMLElement;
+    if (target.closest(".vertex-dot")) return;
 
-    const svg = this.renderRoot.querySelector(".drawing-svg") as SVGSVGElement;
-    if (!svg) return;
+    const container = this.renderRoot.querySelector(".canvas-container") as HTMLElement;
+    if (!container) return;
 
-    const [xPercent, yPercent] = this._svgClickToPercent(e, svg);
+    const rect = container.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const [xPercent, yPercent] = pixelToPercent(px, py, rect.width, rect.height);
 
     // Check if clicking near the first vertex to close the polygon
     if (this.polygon.length > 2) {
@@ -358,10 +356,13 @@ export class ZoneEditor extends LitElement {
     this._clearLongPress();
     this._didDrag = true;
 
-    const svg = this.renderRoot.querySelector(".drawing-svg") as SVGSVGElement;
-    if (!svg) return;
+    const container = this.renderRoot.querySelector(".canvas-container") as HTMLElement;
+    if (!container) return;
 
-    const [xPercent, yPercent] = this._svgClickToPercent(e, svg);
+    const rect = container.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const [xPercent, yPercent] = pixelToPercent(px, py, rect.width, rect.height);
 
     // Update vertex position
     const newPolygon = [...this.polygon];
@@ -441,19 +442,6 @@ export class ZoneEditor extends LitElement {
   // =========================================================================
   // Internal Methods
   // =========================================================================
-
-  /**
-   * Converts a mouse/pointer event on the SVG to percentage coordinates.
-   */
-  private _svgClickToPercent(
-    e: MouseEvent | PointerEvent,
-    svg: SVGSVGElement
-  ): [number, number] {
-    const rect = svg.getBoundingClientRect();
-    const px = e.clientX - rect.left;
-    const py = e.clientY - rect.top;
-    return pixelToPercent(px, py, rect.width, rect.height);
-  }
 
   /**
    * Closes the polygon and dispatches the polygon-complete event.
@@ -594,29 +582,54 @@ export class ZoneEditor extends LitElement {
       user-select: none;
     }
 
-    /* Vertex circles */
-    .vertex {
+    /* Vertex dots (HTML positioned elements) */
+    .vertex-dot {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid #03a9f4;
+      transform: translate(-50%, -50%);
       cursor: grab;
-      transition: r 150ms ease;
-      filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+      z-index: 10;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      transition: transform 150ms ease, box-shadow 150ms ease;
     }
 
-    .vertex:hover {
-      r: 3;
+    .vertex-dot:hover {
+      transform: translate(-50%, -50%) scale(1.3);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
     }
 
-    .vertex--first {
+    .vertex-dot--first {
+      background: #ff5722;
+      border-color: #ffffff;
+      width: 22px;
+      height: 22px;
       cursor: pointer;
-      filter: drop-shadow(0 0 3px rgba(255,87,34,0.8));
     }
 
-    .vertex--first:hover {
-      r: 4;
+    .vertex-dot--first:hover {
+      transform: translate(-50%, -50%) scale(1.2);
     }
 
-    .vertex--dragging {
+    .vertex-dot--dragging {
       cursor: grabbing;
-      r: 3.5;
+      transform: translate(-50%, -50%) scale(1.4);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    }
+
+    .vertex-label {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: #ff5722;
+      font-weight: 600;
+      white-space: nowrap;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
     /* Editor controls bar */
