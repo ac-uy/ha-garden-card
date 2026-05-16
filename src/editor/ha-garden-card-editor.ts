@@ -52,6 +52,7 @@ export class HaGardenCardEditor extends LitElement {
    */
   set hass(hass: HomeAssistant) {
     this._hass = hass;
+    this.requestUpdate();
   }
 
   /**
@@ -541,7 +542,7 @@ export class HaGardenCardEditor extends LitElement {
   private _renderMowerSection() {
     return html`
       <div class="section">
-        <h3 class="section-title">Robot Mower (optional)</h3>
+        <h3 class="section-title">🤖 Robot Mower (optional)</h3>
         <div class="field">
           <label class="field-label">Mower Entity</label>
           <ha-entity-picker
@@ -600,7 +601,7 @@ export class HaGardenCardEditor extends LitElement {
   private _renderPoolSection() {
     return html`
       <div class="section">
-        <h3 class="section-title">Pool Cleaner (optional)</h3>
+        <h3 class="section-title">🏊 Pool Cleaner (optional)</h3>
         <div class="field">
           <label class="field-label">Pool Cleaner Entity</label>
           <ha-entity-picker
