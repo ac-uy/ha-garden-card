@@ -36,6 +36,7 @@ export class HaGardenCardEditor extends LitElement {
   @state() private _config!: GardenCardConfig;
   @state() private _hass?: HomeAssistant;
   @state() private _editingPolygonIndex: number | null = null;
+  @state() private _editingMowerZone = false;
 
   /**
    * Called by HA to provide the current configuration.
@@ -229,6 +230,27 @@ export class HaGardenCardEditor extends LitElement {
       zones,
     });
     this._editingPolygonIndex = null;
+  }
+
+  // ===========================================================================
+  // Event Handlers - Mower Zone
+  // ===========================================================================
+
+  private _handleEditMowerZone(): void {
+    this._editingMowerZone = !this._editingMowerZone;
+  }
+
+  private _handleMowerZoneChanged(e: CustomEvent): void {
+    const polygon = e.detail?.polygon || [];
+    const mower = { ...(this._config.mower || { entity: "" }), zone: polygon };
+    this._dispatchConfigChanged({ ...this._config, mower });
+  }
+
+  private _handleMowerZoneComplete(e: CustomEvent): void {
+    const polygon = e.detail?.polygon || [];
+    const mower = { ...(this._config.mower || { entity: "" }), zone: polygon };
+    this._dispatchConfigChanged({ ...this._config, mower });
+    this._editingMowerZone = false;
   }
 
   // ===========================================================================
@@ -507,6 +529,32 @@ export class HaGardenCardEditor extends LitElement {
                   @value-changed=${this._handleMowerBatteryEntityChange}
                   allow-custom-entity
                 ></ha-entity-picker>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Mower Zone</label>
+                <div class="polygon-status">
+                  ${this._config.mower?.zone && this._config.mower.zone.length >= 3
+                    ? html`<span class="polygon-info">✓ ${this._config.mower.zone.length} points defined</span>`
+                    : html`<span class="polygon-info polygon-info--empty">No mower zone defined</span>`}
+                  <button
+                    class="btn-draw"
+                    @click=${this._handleEditMowerZone}
+                  >
+                    ${this._editingMowerZone ? "Close Editor" : "Draw Mower Zone"}
+                  </button>
+                </div>
+                ${this._editingMowerZone
+                  ? html`
+                      <zone-editor
+                        .image=${this._config.image || ""}
+                        .existingZones=${this._config.zones || []}
+                        .polygon=${this._config.mower?.zone || []}
+                        @polygon-changed=${this._handleMowerZoneChanged}
+                        @polygon-complete=${this._handleMowerZoneComplete}
+                      ></zone-editor>
+                    `
+                  : nothing}
               </div>
             `
           : nothing}
