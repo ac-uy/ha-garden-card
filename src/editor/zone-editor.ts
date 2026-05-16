@@ -105,6 +105,7 @@ export class ZoneEditor extends LitElement {
             class="drawing-svg"
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
+            style="pointer-events: none;"
           >
             <!-- Existing zone polygons (reference) -->
             ${this._renderExistingZones()}
@@ -214,8 +215,9 @@ export class ZoneEditor extends LitElement {
           points="${points}"
           fill="rgba(3, 169, 244, 0.3)"
           stroke="#ffffff"
-          stroke-width="0.5"
+          stroke-width="2"
           stroke-linejoin="round"
+          vector-effect="non-scaling-stroke"
         />
       `;
     }
@@ -235,9 +237,10 @@ export class ZoneEditor extends LitElement {
         points="${points}"
         fill="none"
         stroke="#ffffff"
-        stroke-width="0.5"
+        stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
+        vector-effect="non-scaling-stroke"
       />
     `;
   }

@@ -889,6 +889,7 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
             class="drawing-svg"
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
+            style="pointer-events: none;"
           >
             <!-- Existing zone polygons (reference) -->
             ${this._renderExistingZones()}
@@ -954,8 +955,9 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
           points="${e}"
           fill="rgba(3, 169, 244, 0.3)"
           stroke="#ffffff"
-          stroke-width="0.5"
+          stroke-width="2"
           stroke-linejoin="round"
+          vector-effect="non-scaling-stroke"
         />
       `}const e=this.polygon.map(([e,t])=>`${e},${t}`).join(" "),t=[...this.polygon,this.polygon[0]].map(([e,t])=>`${e},${t}`).join(" ");return V`
       <!-- Semi-transparent fill preview -->
@@ -969,9 +971,10 @@ function e(e,t,o,i){var n,s=arguments.length,r=s<3?t:null===i?i=Object.getOwnPro
         points="${e}"
         fill="none"
         stroke="#ffffff"
-        stroke-width="0.5"
+        stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
+        vector-effect="non-scaling-stroke"
       />
     `}_renderVerticesAsHtml(){return this.polygon.map(([e,t],o)=>{const i=0===o&&!this._isClosed&&this.polygon.length>2,n=this._draggingIndex===o;return V`
           <div
