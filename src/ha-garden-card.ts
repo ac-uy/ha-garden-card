@@ -32,6 +32,7 @@ import "./components/zone-control";
 import "./components/mower-panel";
 import "./components/schedule-view";
 import "./components/water-animation";
+import "./components/mower-animation";
 
 // Import editor (side-effect import to register custom element for getConfigElement)
 import "./editor/ha-garden-card-editor";
@@ -272,6 +273,15 @@ export class HaGardenCard extends LitElement {
     });
   }
 
+  /**
+   * Whether the mower is currently in mowing state.
+   */
+  private get _isMowerMowing(): boolean {
+    if (!this._hass || !this._config?.mower) return false;
+    const entity = this._hass.states[this._config.mower.entity];
+    return entity?.state === "mowing";
+  }
+
   protected render() {
     if (!this._config) {
       return nothing;
@@ -296,6 +306,10 @@ export class HaGardenCard extends LitElement {
             <water-animation
               .zones=${this._waterAnimationZones}
             ></water-animation>
+            <mower-animation
+              .active=${this._isMowerMowing}
+              .zone=${this._config.mower?.zone || []}
+            ></mower-animation>
           </div>
 
           <!-- Zone Controls and Schedule -->

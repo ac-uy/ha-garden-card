@@ -45,6 +45,7 @@ export interface ZoneConfig {
 export interface MowerConfig {
   entity: string; // lawn_mower.* entity_id
   battery_entity?: string; // sensor.* entity for battery level
+  zone?: [number, number][]; // polygon defining mower area on the image
 }
 
 // =============================================================================
