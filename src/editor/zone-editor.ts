@@ -610,7 +610,7 @@ export class ZoneEditor extends LitElement {
       left: 0;
       width: 100%;
       height: 100%;
-      opacity: 0.15;
+      opacity: 0.9;
       pointer-events: none;
       z-index: 4;
       display: flex;
