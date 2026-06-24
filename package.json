@@ -1,6 +1,6 @@
 {
   "name": "ha-garden-card",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "Custom Home Assistant Lovelace card for garden and backyard management with zone overlays, irrigation control, and robot mower status",
   "type": "module",
   "main": "dist/ha-garden-card.js",
