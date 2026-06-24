@@ -14,11 +14,18 @@ const DEFAULT_THRESHOLDS = { low: 20, high: 40 };
 
 function getBadgeColor(
   value: number,
-  thresholds: { low: number; high: number }
+  thresholds: { low: number; high: number } | { type: "range"; cold_danger: number; optimal_low: number; optimal_high: number; hot_danger: number }
 ): string {
-  if (value > thresholds.high) return "#4CAF50"; // green
-  if (value >= thresholds.low) return "#FFC107"; // yellow
-  return "#F44336"; // red
+  if ("type" in thresholds) {
+    // Range mode: both extremes are bad
+    if (value < thresholds.cold_danger || value > thresholds.hot_danger) return "#F44336"; // red
+    if (value < thresholds.optimal_low || value > thresholds.optimal_high) return "#FFC107"; // yellow
+    return "#4CAF50"; // green
+  }
+  // Simple mode: higher = better
+  if (value > thresholds.high) return "#4CAF50";
+  if (value >= thresholds.low) return "#FFC107";
+  return "#F44336";
 }
 
 @customElement("sensor-badge")

@@ -67,9 +67,12 @@ export interface SensorConfig {
   name?: string; // optional display label
   icon?: string; // mdi icon (e.g. "mdi:water-percent")
   position: [number, number]; // [x%, y%] on the image (0-100)
-  /** Thresholds for color coding. Defaults suit soil moisture %.
-   *  Value > high → green, low–high → yellow, < low → red */
-  thresholds?: { low: number; high: number };
+  /** Thresholds for color coding.
+   *  Simple mode (higher = better, e.g. moisture): value > high → green, low–high → yellow, < low → red.
+   *  Range mode (both extremes bad, e.g. temperature): outside danger → red, outside optimal → yellow, inside optimal → green. */
+  thresholds?: 
+    | { low: number; high: number }
+    | { type: "range"; cold_danger: number; optimal_low: number; optimal_high: number; hot_danger: number };
 }
 
 // =============================================================================

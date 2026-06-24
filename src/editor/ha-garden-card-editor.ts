@@ -367,7 +367,8 @@ export class HaGardenCardEditor extends LitElement {
   private _handleSensorThresholdChange(index: number, key: "low" | "high", e: Event): void {
     const val = parseFloat((e.target as HTMLInputElement).value);
     const sensors = [...(this._config.sensors || [])];
-    const current = sensors[index].thresholds ?? { low: 20, high: 40 };
+    const existing = sensors[index].thresholds;
+    const current = (!existing || "type" in existing) ? { low: 20, high: 40 } : existing;
     sensors[index] = { ...sensors[index], thresholds: { ...current, [key]: isNaN(val) ? current[key] : val } };
     this._dispatchConfigChanged({ ...this._config, sensors });
   }
@@ -788,11 +789,11 @@ export class HaGardenCardEditor extends LitElement {
                   <div class="sensor-position-inputs">
                     <label class="field-label" style="margin:0;">🔴 Low &lt;</label>
                     <input type="number" class="text-input" style="width:70px;"
-                      .value=${String(sensor.thresholds?.low ?? 20)}
+                      .value=${String((!sensor.thresholds || "type" in sensor.thresholds) ? 20 : sensor.thresholds.low ?? 20)}
                       @input=${(e: Event) => this._handleSensorThresholdChange(index, "low", e)} />
                     <label class="field-label" style="margin:0;">🟡→🟢 High &gt;</label>
                     <input type="number" class="text-input" style="width:70px;"
-                      .value=${String(sensor.thresholds?.high ?? 40)}
+                      .value=${String((!sensor.thresholds || "type" in sensor.thresholds) ? 40 : sensor.thresholds.high ?? 40)}
                       @input=${(e: Event) => this._handleSensorThresholdChange(index, "high", e)} />
                   </div>
                 </div>
