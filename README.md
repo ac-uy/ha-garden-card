@@ -2,7 +2,7 @@
 
 [![GitHub Release](https://img.shields.io/github/release/ac-uy/ha-garden-card.svg?style=flat-square)](https://github.com/ac-uy/ha-garden-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg?style=flat-square)](https://hacs.xyz/)
-[![License](https://img.shields.io/github/license/ac-uy/ha-garden-card?style=flat-square)](https://github.com/ac-uy/ha-garden-card/blob/master/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://github.com/ac-uy/ha-garden-card/blob/master/LICENSE)
 
 A custom Home Assistant Lovelace card for garden and backyard management. Visualize your garden with an interactive image, colored zone overlays, irrigation controls, and robot mower status — all in one card.
 
