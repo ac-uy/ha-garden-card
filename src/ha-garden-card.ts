@@ -33,6 +33,7 @@ import "./components/mower-panel";
 import "./components/schedule-view";
 import "./components/water-animation";
 import "./components/mower-animation";
+import "./components/sensor-badge";
 
 // Import editor (side-effect import to register custom element for getConfigElement)
 import "./editor/ha-garden-card-editor";
@@ -57,6 +58,9 @@ function getRelevantEntityIds(config: GardenCardConfig): Set<string> {
   }
   if (config.pool) {
     entities.add(config.pool.entity);
+  }
+  for (const sensor of (config.sensors || [])) {
+    entities.add(sensor.entity);
   }
   return entities;
 }
@@ -330,6 +334,12 @@ export class HaGardenCard extends LitElement {
                 icon="${this._config.pool?.icon || 'mdi:pool'}"
               ></mower-animation>
             ` : nothing}
+            ${(this._config.sensors || []).map((sensor) => html`
+              <sensor-badge
+                .sensor=${sensor}
+                .hass=${this._hass}
+              ></sensor-badge>
+            `)}
           </div>
 
           <!-- Zone Controls and Schedule -->

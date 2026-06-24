@@ -22,6 +22,7 @@ export interface GardenCardConfig {
   zones?: ZoneConfig[];
   mower?: MowerConfig;
   pool?: PoolConfig;
+  sensors?: SensorConfig[];
 }
 
 /**
@@ -56,6 +57,19 @@ export interface PoolConfig {
   entity: string; // switch.* or vacuum.* entity_id for pool cleaner
   zone?: [number, number][]; // polygon defining pool area on the image
   icon?: string; // custom icon (default: mdi:pool)
+}
+
+/**
+ * Configuration for a sensor badge overlay on the garden image.
+ */
+export interface SensorConfig {
+  entity: string; // sensor.* entity_id
+  name?: string; // optional display label
+  icon?: string; // mdi icon (e.g. "mdi:water-percent")
+  position: [number, number]; // [x%, y%] on the image (0-100)
+  /** Thresholds for color coding. Defaults suit soil moisture %.
+   *  Value > high → green, low–high → yellow, < low → red */
+  thresholds?: { low: number; high: number };
 }
 
 // =============================================================================
