@@ -15,6 +15,7 @@ import type {
   ZoneConfig,
   MowerConfig,
   PoolConfig,
+  SensorConfig,
   HomeAssistant,
 } from "../models/types";
 
@@ -49,6 +50,7 @@ export class HaGardenCardEditor extends LitElement {
   @state() private _editingPolygonIndex: number | null = null;
   @state() private _editingMowerZone = false;
   @state() private _editingPoolZone = false;
+  @state() private _editingSensorIndex: number | null = null;
 
   /**
    * Called by HA to provide the current configuration.
@@ -336,6 +338,52 @@ export class HaGardenCardEditor extends LitElement {
   }
 
   // ===========================================================================
+  // Event Handlers - Sensors
+  // ===========================================================================
+
+  private _handleAddSensor(): void {
+    const sensors: SensorConfig[] = [...(this._config.sensors || []), {
+      entity: "",
+      position: [50, 50],
+    }];
+    this._dispatchConfigChanged({ ...this._config, sensors });
+    this._editingSensorIndex = sensors.length - 1;
+  }
+
+  private _handleRemoveSensor(index: number): void {
+    const sensors = [...(this._config.sensors || [])];
+    sensors.splice(index, 1);
+    if (this._editingSensorIndex === index) this._editingSensorIndex = null;
+    this._dispatchConfigChanged({ ...this._config, sensors: sensors.length ? sensors : undefined });
+  }
+
+  private _handleSensorFieldChange(index: number, field: keyof SensorConfig, value: unknown): void {
+    const sensors = [...(this._config.sensors || [])];
+    sensors[index] = { ...sensors[index], [field]: value || undefined } as SensorConfig;
+    if (field === "entity") sensors[index].entity = value as string;
+    this._dispatchConfigChanged({ ...this._config, sensors });
+  }
+
+  private _handleSensorThresholdChange(index: number, key: "low" | "high", e: Event): void {
+    const val = parseFloat((e.target as HTMLInputElement).value);
+    const sensors = [...(this._config.sensors || [])];
+    const current = sensors[index].thresholds ?? { low: 20, high: 40 };
+    sensors[index] = { ...sensors[index], thresholds: { ...current, [key]: isNaN(val) ? current[key] : val } };
+    this._dispatchConfigChanged({ ...this._config, sensors });
+  }
+
+  private _handleSensorPositionPick(index: number, e: MouseEvent): void {
+    const container = (e.currentTarget as HTMLElement).closest(".sensor-picker-container") as HTMLElement;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+    const sensors = [...(this._config.sensors || [])];
+    sensors[index] = { ...sensors[index], position: [x, y] };
+    this._dispatchConfigChanged({ ...this._config, sensors });
+  }
+
+  // ===========================================================================
   // Rendering
   // ===========================================================================
 
@@ -431,6 +479,7 @@ export class HaGardenCardEditor extends LitElement {
         ` : nothing}
 
         ${this._renderZonesSection()}
+        ${this._renderSensorsSection()}
       </div>
     `;
   }
@@ -655,6 +704,101 @@ export class HaGardenCardEditor extends LitElement {
                 `
               : nothing}
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderSensorsSection() {
+    const sensors = this._config.sensors || [];
+    return html`
+      <div class="section">
+        <div class="section-header">
+          <h3 class="section-title">🌡️ Sensor Badges (optional)</h3>
+          <button class="add-button" @click=${this._handleAddSensor}>+ Add Sensor</button>
+        </div>
+        <div class="zone-list">
+          ${sensors.map((sensor, index) => html`
+            <div class="zone-entry">
+              <div class="zone-header">
+                <span class="zone-number">${index + 1}</span>
+                <span class="zone-name-display">${sensor.name || sensor.entity || "New Sensor"}</span>
+                <div class="zone-actions">
+                  <button class="icon-button remove-button" @click=${() => this._handleRemoveSensor(index)} title="Remove">✕</button>
+                </div>
+              </div>
+              <div class="zone-fields">
+                <div class="field">
+                  <label class="field-label">Entity</label>
+                  <ha-entity-picker
+                    .hass=${this._hass}
+                    .value=${sensor.entity || ""}
+                    .includeDomains=${["sensor"]}
+                    @value-changed=${(e: CustomEvent) => this._handleSensorFieldChange(index, "entity", e.detail?.value ?? "")}
+                    allow-custom-entity
+                  ></ha-entity-picker>
+                </div>
+                <div class="field">
+                  <label class="field-label">Name (optional)</label>
+                  <input type="text" class="text-input" .value=${sensor.name || ""}
+                    @input=${(e: Event) => this._handleSensorFieldChange(index, "name", (e.target as HTMLInputElement).value)}
+                    placeholder="e.g. Soil Moisture" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Icon (optional, e.g. mdi:water-percent)</label>
+                  <input type="text" class="text-input" .value=${sensor.icon || ""}
+                    @input=${(e: Event) => this._handleSensorFieldChange(index, "icon", (e.target as HTMLInputElement).value)}
+                    placeholder="mdi:water-percent" />
+                </div>
+                <div class="field">
+                  <label class="field-label">
+                    Position — ${sensor.position[0]}%, ${sensor.position[1]}%
+                    ${this._config.image ? html`
+                      <button class="btn-draw" style="margin-left:8px;"
+                        @click=${() => { this._editingSensorIndex = this._editingSensorIndex === index ? null : index; }}>
+                        ${this._editingSensorIndex === index ? "Close Picker" : "Pick on Image"}
+                      </button>` : nothing}
+                  </label>
+                  <div class="sensor-position-inputs">
+                    <label class="field-label" style="margin:0;">X%</label>
+                    <input type="number" class="text-input" style="width:70px;" min="0" max="100"
+                      .value=${String(sensor.position[0])}
+                      @input=${(e: Event) => {
+                        const x = parseInt((e.target as HTMLInputElement).value);
+                        if (!isNaN(x)) this._handleSensorFieldChange(index, "position", [x, sensor.position[1]]);
+                      }} />
+                    <label class="field-label" style="margin:0;">Y%</label>
+                    <input type="number" class="text-input" style="width:70px;" min="0" max="100"
+                      .value=${String(sensor.position[1])}
+                      @input=${(e: Event) => {
+                        const y = parseInt((e.target as HTMLInputElement).value);
+                        if (!isNaN(y)) this._handleSensorFieldChange(index, "position", [sensor.position[0], y]);
+                      }} />
+                  </div>
+                  ${this._editingSensorIndex === index && this._config.image ? html`
+                    <div class="sensor-picker-container" @click=${(e: MouseEvent) => this._handleSensorPositionPick(index, e)}>
+                      <img src="${this._config.image}" alt="Garden" style="width:100%;display:block;pointer-events:none;" />
+                      <div class="sensor-pick-dot" style="left:${sensor.position[0]}%;top:${sensor.position[1]}%;"></div>
+                      <div class="sensor-pick-hint">Click to set position</div>
+                    </div>
+                  ` : nothing}
+                </div>
+                <div class="field">
+                  <label class="field-label">Color Thresholds (for numeric sensors)</label>
+                  <div class="sensor-position-inputs">
+                    <label class="field-label" style="margin:0;">🔴 Low &lt;</label>
+                    <input type="number" class="text-input" style="width:70px;"
+                      .value=${String(sensor.thresholds?.low ?? 20)}
+                      @input=${(e: Event) => this._handleSensorThresholdChange(index, "low", e)} />
+                    <label class="field-label" style="margin:0;">🟡→🟢 High &gt;</label>
+                    <input type="number" class="text-input" style="width:70px;"
+                      .value=${String(sensor.thresholds?.high ?? 40)}
+                      @input=${(e: Event) => this._handleSensorThresholdChange(index, "high", e)} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          `)}
         </div>
       </div>
     `;
@@ -1006,6 +1150,49 @@ export class HaGardenCardEditor extends LitElement {
 
     zone-editor {
       margin-top: 8px;
+    }
+
+    .sensor-position-inputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .sensor-picker-container {
+      position: relative;
+      margin-top: 8px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: crosshair;
+      border: 2px dashed var(--primary-color, #03a9f4);
+    }
+
+    .sensor-pick-dot {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--primary-color, #03a9f4);
+      border: 2px solid #fff;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      pointer-events: none;
+    }
+
+    .sensor-pick-hint {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      pointer-events: none;
+      white-space: nowrap;
     }
   `;
 }
